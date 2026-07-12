@@ -1,41 +1,73 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Gift, MessageCircle, ShoppingBag, X } from 'lucide-react';
 import { siteConfig } from '@/config/site';
 import { MediaImage } from '@/components/ui/media-image';
+import { useUI } from '@/components/providers/ui-provider';
+import { cn } from '@/lib/utils';
+
+const NEWSLETTER_COOLDOWN_KEY = 'aura:nl-dismissed-until';
+const NEWSLETTER_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+function startNewsletterCooldown() {
+  localStorage.setItem(NEWSLETTER_COOLDOWN_KEY, String(Date.now() + NEWSLETTER_COOLDOWN_MS));
+}
 
 /* ---- Newsletter / welcome-discount popup --------------------------------- */
 export function NewsletterPopup() {
-  const [open, setOpen] = useState(false);
+  const { overlay, quickView, newsletterOpen, setNewsletterOpen } = useUI();
   const [email, setEmail] = useState('');
   const [done, setDone] = useState(false);
 
+  // Read live inside the retry closure below, so the popup doesn't need to
+  // restart its 6s timer (and forget it already waited) every time some
+  // other overlay opens and closes.
+  const blockedRef = useRef(false);
+  blockedRef.current = overlay !== null || quickView !== null;
+
   useEffect(() => {
     if (!siteConfig.features.newsletterPopup) return;
-    if (sessionStorage.getItem('aura:nl-dismissed')) return;
-    const t = setTimeout(() => setOpen(true), 6000);
-    return () => clearTimeout(t);
+    const dismissedUntil = Number(localStorage.getItem(NEWSLETTER_COOLDOWN_KEY) ?? '0');
+    if (Date.now() < dismissedUntil) return;
+
+    let cancelled = false;
+    const tryOpen = () => {
+      if (cancelled) return;
+      // Never pop up on top of the cart drawer, mobile menu, search overlay
+      // or quick view — wait for it to close instead of covering it.
+      if (blockedRef.current) {
+        setTimeout(tryOpen, 1000);
+        return;
+      }
+      setNewsletterOpen(true);
+    };
+    const t = setTimeout(tryOpen, 6000);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function dismiss() {
-    setOpen(false);
-    sessionStorage.setItem('aura:nl-dismissed', '1');
+    setNewsletterOpen(false);
+    startNewsletterCooldown();
   }
 
   return (
     <AnimatePresence>
-      {open && (
+      {newsletterOpen && (
         <>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={dismiss}
-            className="fixed inset-0 z-[70] bg-ink/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[var(--z-modal)] bg-ink/50 backdrop-blur-sm"
           />
-          <div className="fixed inset-0 z-[70] grid place-items-center p-4">
+          <div className="fixed inset-0 z-[var(--z-modal)] grid place-items-center p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -66,7 +98,7 @@ export function NewsletterPopup() {
                       e.preventDefault();
                       if (email.trim()) {
                         setDone(true);
-                        sessionStorage.setItem('aura:nl-dismissed', '1');
+                        startNewsletterCooldown();
                       }
                     }}
                   >
@@ -104,20 +136,46 @@ const PURCHASES = [
   { name: 'Ava', place: 'Sydney', product: 'Terra Stoneware Vase', seed: 'terra-1' },
 ];
 
+const RECENTLY_PURCHASED_SESSION_KEY = 'aura:recently-purchased-shown';
+const RECENTLY_PURCHASED_MAX_PER_SESSION = 4;
+
 export function RecentlyPurchasedPopup() {
+  const { overlay, quickView, newsletterOpen, stickyBarVisible } = useUI();
   const [index, setIndex] = useState<number | null>(null);
+
+  // Read live inside the interval closure so the 22s cadence never resets,
+  // instead of restarting the effect (and the timers) on every UI change.
+  const suppressedRef = useRef(false);
+  suppressedRef.current = overlay !== null || quickView !== null || newsletterOpen;
 
   useEffect(() => {
     if (!siteConfig.features.recentlyPurchasedPopup) return;
+
+    let shown = Number(sessionStorage.getItem(RECENTLY_PURCHASED_SESSION_KEY) ?? '0');
+    if (shown >= RECENTLY_PURCHASED_MAX_PER_SESSION) return;
+
     let i = 0;
     let hideTimer: ReturnType<typeof setTimeout>;
+    let interval: ReturnType<typeof setInterval>;
+
     const show = () => {
+      // Skip this tick (don't consume a "shown" credit) if a modal or the
+      // newsletter popup currently owns the screen — try again next tick.
+      if (suppressedRef.current) return;
+      if (shown >= RECENTLY_PURCHASED_MAX_PER_SESSION) {
+        clearInterval(interval);
+        return;
+      }
+      shown += 1;
+      sessionStorage.setItem(RECENTLY_PURCHASED_SESSION_KEY, String(shown));
       setIndex(i % PURCHASES.length);
       hideTimer = setTimeout(() => setIndex(null), 5000);
       i++;
+      if (shown >= RECENTLY_PURCHASED_MAX_PER_SESSION) clearInterval(interval);
     };
+
     const first = setTimeout(show, 12000);
-    const interval = setInterval(show, 22000);
+    interval = setInterval(show, 22000);
     return () => {
       clearTimeout(first);
       clearTimeout(hideTimer);
@@ -135,7 +193,10 @@ export function RecentlyPurchasedPopup() {
           animate={{ opacity: 1, y: 0, x: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed bottom-4 left-4 z-[55] hidden w-[300px] items-center gap-3 rounded-2xl border border-line bg-surface p-3 shadow-lift sm:flex"
+          className={cn(
+            'fixed left-4 z-[var(--z-popover)] hidden w-[300px] items-center gap-3 rounded-2xl border border-line bg-surface p-3 shadow-lift sm:flex',
+            stickyBarVisible ? 'bottom-20' : 'bottom-4',
+          )}
         >
           <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg">
             <MediaImage seed={p.seed} alt="" monogram={false} />
@@ -157,6 +218,7 @@ export function RecentlyPurchasedPopup() {
 
 /* ---- Live chat launcher (placeholder) ------------------------------------ */
 export function LiveChatButton() {
+  const { stickyBarVisible } = useUI();
   const [open, setOpen] = useState(false);
   if (!siteConfig.features.liveChat) return null;
 
@@ -164,7 +226,10 @@ export function LiveChatButton() {
     <>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-4 right-4 z-[54] grid h-14 w-14 place-items-center rounded-full bg-ink text-canvas shadow-lift transition-transform hover:scale-105"
+        className={cn(
+          'fixed right-4 z-[var(--z-popover)] grid h-14 w-14 place-items-center rounded-full bg-ink text-canvas shadow-lift transition-transform hover:scale-105',
+          stickyBarVisible ? 'bottom-20' : 'bottom-4',
+        )}
         aria-label="Open chat"
       >
         {open ? <X size={22} /> : <MessageCircle size={22} />}
@@ -176,7 +241,10 @@ export function LiveChatButton() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.96 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed bottom-20 right-4 z-[54] w-[min(90vw,340px)] overflow-hidden rounded-3xl border border-line bg-surface shadow-pop"
+            className={cn(
+              'fixed right-4 z-[var(--z-popover)] w-[min(90vw,340px)] overflow-hidden rounded-3xl border border-line bg-surface shadow-pop',
+              stickyBarVisible ? 'bottom-36' : 'bottom-20',
+            )}
           >
             <div className="flex items-center gap-3 bg-ink p-4 text-canvas">
               <span className="grid h-9 w-9 place-items-center rounded-full bg-accent text-accent-ink">

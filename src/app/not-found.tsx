@@ -1,10 +1,16 @@
 import Link from 'next/link';
 import { ArrowRight, Search } from 'lucide-react';
 import { products } from '@/lib/data/products';
+import { isSingleProduct, getFeaturedProduct } from '@/lib/store-mode';
 import { ProductRail } from '@/components/product/product-rail';
 
 export default function NotFound() {
-  const suggestions = products.filter((p) => p.bestSeller).slice(0, 8);
+  const featured = getFeaturedProduct();
+  // In single-product mode the "shop" fallback is the one product; otherwise
+  // it's the full catalogue. Suggestions always fall back to something.
+  const suggestions = isSingleProduct
+    ? [featured]
+    : products.filter((p) => p.bestSeller).slice(0, 8);
 
   return (
     <div className="container-page py-20 lg:py-28">
@@ -18,9 +24,15 @@ export default function NotFound() {
           <Link href="/" className="btn-primary">
             Back to home <ArrowRight size={16} />
           </Link>
-          <Link href="/collections/all" className="btn-outline">
-            <Search size={16} /> Shop all
-          </Link>
+          {isSingleProduct ? (
+            <Link href={`/products/${featured.slug}`} className="btn-outline">
+              <Search size={16} /> View the product
+            </Link>
+          ) : (
+            <Link href="/collections/all" className="btn-outline">
+              <Search size={16} /> Shop all
+            </Link>
+          )}
         </div>
       </div>
 

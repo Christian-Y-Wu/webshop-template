@@ -6,22 +6,24 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Clock, Search, TrendingUp, X } from 'lucide-react';
 import { products } from '@/lib/data/products';
 import { collections } from '@/lib/data/collections';
+import { searchProducts } from '@/lib/search';
 import { MediaImage } from '@/components/ui/media-image';
 import { Price } from '@/components/ui/price';
 import { useUI } from '@/components/providers/ui-provider';
+import { useFocusTrap } from '@/lib/use-focus-trap';
 
 const TRENDING = ['Merino sweater', 'Linen trouser', 'Ceramic vase', 'Gold hoops', 'Soy candle'];
 
 export function SearchOverlay() {
   const { overlay, closeOverlay } = useUI();
   const open = overlay === 'search';
+  const trapRef = useFocusTrap<HTMLDivElement>(open, closeOverlay);
   const [query, setQuery] = useState('');
   const [recent, setRecent] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
-      setTimeout(() => inputRef.current?.focus(), 60);
       try {
         setRecent(JSON.parse(localStorage.getItem('aura:recent-search') || '[]'));
       } catch {
@@ -32,18 +34,7 @@ export function SearchOverlay() {
     }
   }, [open]);
 
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return products
-      .filter(
-        (p) =>
-          p.title.toLowerCase().includes(q) ||
-          p.tags?.some((t) => t.includes(q)) ||
-          p.collections.some((c) => c.includes(q)),
-      )
-      .slice(0, 6);
-  }, [query]);
+  const results = useMemo(() => searchProducts(query, 6), [query]);
 
   const collectionHits = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -69,16 +60,19 @@ export function SearchOverlay() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeOverlay}
-            className="fixed inset-0 z-50 bg-ink/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[var(--z-overlay)] bg-ink/40 backdrop-blur-sm"
           />
           <motion.div
             initial={{ y: '-100%' }}
             animate={{ y: 0 }}
             exit={{ y: '-100%' }}
             transition={{ type: 'tween', duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-x-0 top-0 z-50 max-h-[92vh] overflow-y-auto bg-canvas"
+            className="fixed inset-x-0 top-0 z-[var(--z-overlay)] max-h-[92vh] overflow-y-auto bg-canvas"
             role="dialog"
+            aria-modal="true"
             aria-label="Search"
+            ref={trapRef}
+            tabIndex={-1}
           >
             <div className="container-page py-5">
               {/* Input */}

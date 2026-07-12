@@ -31,7 +31,7 @@ export function Header() {
   return (
     <header
       className={cn(
-        'sticky top-0 z-40 border-b bg-canvas/90 backdrop-blur-md transition-shadow duration-300',
+        'sticky top-0 z-[var(--z-sticky)] border-b bg-canvas/90 backdrop-blur-md transition-shadow duration-300',
         scrolled ? 'border-line shadow-soft' : 'border-transparent',
       )}
       onMouseLeave={() => setActiveMega(null)}

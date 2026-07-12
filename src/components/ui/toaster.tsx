@@ -10,7 +10,7 @@ export function Toaster() {
   const { toasts, dismissToast } = useUI();
 
   return (
-    <div className="pointer-events-none fixed bottom-4 right-4 z-[120] flex w-[min(92vw,360px)] flex-col gap-2">
+    <div className="pointer-events-none fixed bottom-4 right-4 z-[var(--z-toast)] flex w-[min(92vw,360px)] flex-col gap-2">
       <AnimatePresence>
         {toasts.map((t) => (
           <motion.div

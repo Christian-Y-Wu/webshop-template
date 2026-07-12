@@ -35,6 +35,16 @@
   --radius-card: 18px;
   --marquee-duration: 40s;
 
+  /* Z-index scale — one documented slot per stacking tier, instead of
+     picking a fresh ad hoc number every time a new floating element is
+     added. Higher tiers are assumed to be able to appear over lower ones. */
+  --z-sticky: 40;   /* header, sticky add-to-cart bar */
+  --z-overlay: 50;  /* cart drawer, mobile menu, search overlay */
+  --z-popover: 55;  /* live chat launcher, recently-purchased toast */
+  --z-modal: 65;    /* quick view, newsletter/marketing popups */
+  --z-lightbox: 80; /* product gallery lightbox */
+  --z-toast: 120;   /* toaster notifications — always on top */
+
   /* Font stacks consume the next/font variables injected on <html>. */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;

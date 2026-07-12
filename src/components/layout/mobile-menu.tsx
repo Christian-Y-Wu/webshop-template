@@ -9,12 +9,14 @@ import { siteConfig } from '@/config/site';
 import { Logo } from '@/components/ui/logo';
 import { LocaleSwitcher } from '@/components/layout/locale-switcher';
 import { useUI } from '@/components/providers/ui-provider';
+import { useFocusTrap } from '@/lib/use-focus-trap';
 import { cn } from '@/lib/utils';
 
 export function MobileMenu() {
   const { overlay, closeOverlay } = useUI();
   const open = overlay === 'menu';
   const [expanded, setExpanded] = useState<string | null>(null);
+  const trapRef = useFocusTrap<HTMLElement>(open, closeOverlay);
 
   return (
     <AnimatePresence>
@@ -25,16 +27,19 @@ export function MobileMenu() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeOverlay}
-            className="fixed inset-0 z-50 bg-ink/40 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-[var(--z-overlay)] bg-ink/40 backdrop-blur-sm lg:hidden"
           />
           <motion.aside
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'tween', duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-y-0 left-0 z-50 flex w-[88%] max-w-sm flex-col bg-canvas lg:hidden"
+            className="fixed inset-y-0 left-0 z-[var(--z-overlay)] flex w-[88%] max-w-sm flex-col bg-canvas lg:hidden"
             role="dialog"
+            aria-modal="true"
             aria-label="Menu"
+            ref={trapRef}
+            tabIndex={-1}
           >
             <div className="flex h-16 items-center justify-between border-b border-line px-5">
               <Logo />

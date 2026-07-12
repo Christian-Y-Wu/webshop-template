@@ -27,6 +27,14 @@ export interface AnnouncementItem {
   href?: string;
 }
 
+export interface DiscountCode {
+  code: string;
+  description: string;
+  kind: 'percent' | 'freeShipping';
+  /** Percent off (0-100) when kind is 'percent'; ignored for 'freeShipping'. */
+  value?: number;
+}
+
 export const siteConfig = {
   name: 'AURA',
   legalName: 'Aura Studio Ltd.',
@@ -37,6 +45,34 @@ export const siteConfig = {
   locale: 'en',
   /** A store-wide theme preset. See globals.css: '', 'midnight', 'botanic', 'cobalt'. */
   theme: '' as '' | 'midnight' | 'botanic' | 'cobalt',
+
+  /* ======================================================================
+     STORE MODE — the single most important decision for this template.
+
+       'single'  → You sell ONE hero product (or just a few). The homepage
+                   becomes a focused, conversion-first product landing page,
+                   the navigation collapses to the essentials, and all of the
+                   multi-category "big shop" chrome (mega-menu, collection
+                   grids, category browsing) is hidden. Ideal for launching
+                   with a single item.
+
+       'catalog' → The full multi-product storefront: mega-menu, collections,
+                   category grids, featured rails, the works. Switch to this
+                   once your range grows into a proper catalogue.
+
+     Start in 'single'. When you add enough products that customers need to
+     browse and filter, flip this one line to 'catalog' — every page adapts
+     automatically. Nothing else needs to change to grow from one product to
+     a full shop. See src/lib/store-mode.ts for the helpers that read this.
+     ====================================================================== */
+  storeMode: 'single' as 'single' | 'catalog',
+
+  /**
+   * In 'single' mode, the slug of the one product the entire site revolves
+   * around (must match a `slug` in src/lib/data/products.ts). The homepage,
+   * announcement links and hero all point at this product.
+   */
+  featuredProductSlug: 'aria-merino-sweater',
 
   email: 'hello@aura-store.com',
   phone: '+1 (415) 555-0132',
@@ -51,14 +87,16 @@ export const siteConfig = {
   },
 
   // ---- Announcement bar -------------------------------------------------
+  // Kept product-neutral so the copy works in either store mode. In 'catalog'
+  // mode you may want to point these at collections (e.g. /collections/sale).
   announcements: [
     { text: 'Complimentary shipping on orders over $75 — worldwide', href: '/pages/shipping' },
-    { text: 'Summer Edit is here — up to 40% off selected pieces', href: '/collections/sale' },
+    { text: 'Loved by 12,000+ customers · Rated 4.8 out of 5', href: '/#reviews' },
     { text: '30-day easy returns · Free & carbon-neutral', href: '/pages/returns' },
   ] as AnnouncementItem[],
   /** ISO date the promotional countdown counts down to. */
   countdownTo: '2026-08-31T23:59:59',
-  countdownLabel: 'Summer Edit ends in',
+  countdownLabel: 'Launch offer ends in',
 
   // ---- Commerce feature flags ------------------------------------------
   features: {
@@ -77,6 +115,14 @@ export const siteConfig = {
 
   freeShippingThreshold: 75, // base currency
   giftWrapPrice: 6,
+
+  // ---- Discount codes ----------------------------------------------------
+  // Redeemable in the cart drawer and at checkout. `WELCOME10` is the code
+  // the newsletter popup promises new subscribers (see marketing/popups.tsx).
+  discountCodes: [
+    { code: 'WELCOME10', description: '10% off your first order', kind: 'percent', value: 10 },
+    { code: 'FREESHIP', description: 'Free shipping on this order', kind: 'freeShipping' },
+  ] as DiscountCode[],
 
   // ---- Internationalisation --------------------------------------------
   defaultCurrency: 'USD',

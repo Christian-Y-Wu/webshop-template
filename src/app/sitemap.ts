@@ -1,12 +1,12 @@
 import type { MetadataRoute } from 'next';
-import { siteConfig } from '@/config/site';
+import { siteUrl } from '@/lib/site-url';
 import { products } from '@/lib/data/products';
 import { collections } from '@/lib/data/collections';
 import { blogPosts } from '@/lib/data/blog';
 import { contentPages } from '@/lib/data/pages';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = siteConfig.url;
+  const base = siteUrl;
   const now = new Date();
 
   const staticRoutes = ['', '/collections', '/blog', '/pages/contact', '/pages/faq'].map((path) => ({

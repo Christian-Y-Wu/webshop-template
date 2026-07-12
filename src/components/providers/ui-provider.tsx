@@ -30,6 +30,14 @@ interface UIContextValue {
   toasts: Toast[];
   toast: (t: Omit<Toast, 'id'>) => void;
   dismissToast: (id: number) => void;
+  /** Whether the product page's sticky add-to-cart bar is currently visible —
+   *  read by floating marketing widgets so they can move out of its way. */
+  stickyBarVisible: boolean;
+  setStickyBarVisible: (v: boolean) => void;
+  /** Whether the newsletter popup is open — read by other marketing widgets
+   *  (recently-purchased toast) so they don't stack on top of it. */
+  newsletterOpen: boolean;
+  setNewsletterOpen: (v: boolean) => void;
 }
 
 const UIContext = createContext<UIContextValue | null>(null);
@@ -38,6 +46,8 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [quickView, setQuickView] = useState<Product | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [stickyBarVisible, setStickyBarVisible] = useState(false);
+  const [newsletterOpen, setNewsletterOpen] = useState(false);
 
   const closeOverlay = useCallback(() => setOverlay(null), []);
   const openOverlay = useCallback((o: Exclude<Overlay, null>) => setOverlay(o), []);
@@ -51,17 +61,9 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
     };
   }, [overlay, quickView]);
 
-  // Close overlays on Escape
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setOverlay(null);
-        setQuickView(null);
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  // Escape-to-close for each overlay is owned by useFocusTrap at the
+  // component level (see src/lib/use-focus-trap.ts) so it works for overlay
+  // state that lives outside this provider too (e.g. the gallery lightbox).
 
   const dismissToast = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -88,6 +90,10 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
         toasts,
         toast,
         dismissToast,
+        stickyBarVisible,
+        setStickyBarVisible,
+        newsletterOpen,
+        setNewsletterOpen,
       }}
     >
       {children}

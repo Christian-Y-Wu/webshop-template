@@ -10,12 +10,14 @@ import { MediaImage } from '@/components/ui/media-image';
 import { Badge } from '@/components/ui/badge';
 import { Price } from '@/components/ui/price';
 import { StarRating } from '@/components/ui/star-rating';
+import { useFocusTrap } from '@/lib/use-focus-trap';
 import { cn, compactNumber } from '@/lib/utils';
 
 export function QuickView() {
   const { quickView, closeQuickView, openOverlay, toast } = useUI();
   const { addLine } = useStore();
   const product = quickView;
+  const trapRef = useFocusTrap<HTMLDivElement>(Boolean(product), closeQuickView);
 
   const [color, setColor] = useState<string | undefined>();
   const [size, setSize] = useState<string | undefined>();
@@ -53,9 +55,9 @@ export function QuickView() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeQuickView}
-            className="fixed inset-0 z-[60] bg-ink/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[var(--z-modal)] bg-ink/50 backdrop-blur-sm"
           />
-          <div className="fixed inset-0 z-[60] flex items-end justify-center p-0 sm:items-center sm:p-6">
+          <div className="fixed inset-0 z-[var(--z-modal)] flex items-end justify-center p-0 sm:items-center sm:p-6">
             <motion.div
               initial={{ opacity: 0, y: 40, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -63,7 +65,10 @@ export function QuickView() {
               transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
               className="relative grid max-h-[92vh] w-full max-w-3xl grid-cols-1 overflow-hidden rounded-t-3xl bg-canvas sm:grid-cols-2 sm:rounded-3xl"
               role="dialog"
+              aria-modal="true"
               aria-label={`Quick view: ${product.title}`}
+              ref={trapRef}
+              tabIndex={-1}
             >
               <button
                 onClick={closeQuickView}

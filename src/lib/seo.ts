@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { siteConfig } from '@/config/site';
+import { siteUrl } from '@/lib/site-url';
 import type { Product } from '@/lib/types';
 
-const BASE = siteConfig.url;
+const BASE = siteUrl;
 
 /** Build page metadata with sensible OG/Twitter defaults. */
 export function buildMetadata({

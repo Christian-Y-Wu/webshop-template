@@ -8,6 +8,9 @@ import { useStore } from '@/components/providers/store-provider';
 import { useUI } from '@/components/providers/ui-provider';
 import { siteConfig } from '@/config/site';
 import { products } from '@/lib/data/products';
+import { isSingleProduct, getFeaturedProduct } from '@/lib/store-mode';
+import { findDiscount, applyDiscount } from '@/lib/discounts';
+import { useFocusTrap } from '@/lib/use-focus-trap';
 import { MediaImage } from '@/components/ui/media-image';
 import { Price } from '@/components/ui/price';
 import { FreeShippingBar } from '@/components/ui/free-shipping-bar';
@@ -17,9 +20,18 @@ import { formatMoney } from '@/lib/utils';
 export function CartDrawer() {
   const { overlay, closeOverlay } = useUI();
   const open = overlay === 'cart';
+  const trapRef = useFocusTrap<HTMLElement>(open, closeOverlay);
   const { lines, subtotal, updateQuantity, removeLine, toggleGiftWrap, saveForLater, currency } = useStore();
   const [discount, setDiscount] = useState('');
-  const [discountApplied, setDiscountApplied] = useState(false);
+  const [appliedDiscount, setAppliedDiscount] = useState<ReturnType<typeof findDiscount>>(undefined);
+  const [discountError, setDiscountError] = useState(false);
+  const discountResult = applyDiscount(subtotal, 0, appliedDiscount);
+
+  function applyDiscountCode() {
+    const found = findDiscount(discount);
+    setAppliedDiscount(found);
+    setDiscountError(!found);
+  }
 
   const recommendations = products
     .filter((p) => p.bestSeller && !lines.some((l) => l.productId === p.id))
@@ -34,16 +46,19 @@ export function CartDrawer() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeOverlay}
-            className="fixed inset-0 z-50 bg-ink/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[var(--z-overlay)] bg-ink/40 backdrop-blur-sm"
           />
           <motion.aside
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-canvas"
+            className="fixed inset-y-0 right-0 z-[var(--z-overlay)] flex w-full max-w-md flex-col bg-canvas"
             role="dialog"
+            aria-modal="true"
             aria-label="Shopping cart"
+            ref={trapRef}
+            tabIndex={-1}
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-line px-5 py-4">
@@ -156,20 +171,23 @@ export function CartDrawer() {
                         <Tag size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
                         <input
                           value={discount}
-                          onChange={(e) => setDiscount(e.target.value)}
+                          onChange={(e) => {
+                            setDiscount(e.target.value);
+                            setDiscountError(false);
+                          }}
                           placeholder="Discount code"
                           className="input pl-9"
                         />
                       </div>
-                      <button
-                        onClick={() => setDiscountApplied(Boolean(discount.trim()))}
-                        className="btn-outline px-5"
-                      >
+                      <button onClick={applyDiscountCode} className="btn-outline px-5">
                         Apply
                       </button>
                     </div>
-                    {discountApplied && (
-                      <p className="mt-2 text-xs text-success">✓ Code “{discount}” will be validated at checkout.</p>
+                    {appliedDiscount && (
+                      <p className="mt-2 text-xs text-success">✓ {appliedDiscount.description}</p>
+                    )}
+                    {discountError && (
+                      <p className="mt-2 text-xs text-sale">“{discount}” isn’t a valid code.</p>
                     )}
                   </div>
 
@@ -199,12 +217,18 @@ export function CartDrawer() {
 
                 {/* Footer */}
                 <div className="border-t border-line bg-surface px-5 py-4">
-                  <div className="mb-3 flex items-center justify-between">
+                  <div className="mb-1 flex items-center justify-between">
                     <span className="text-sm text-ink-soft">Subtotal</span>
                     <span className="font-serif text-xl">{formatMoney(subtotal, currency)}</span>
                   </div>
+                  {appliedDiscount && discountResult.discountAmount > 0 && (
+                    <div className="mb-1 flex items-center justify-between text-sm text-success">
+                      <span>{appliedDiscount.description}</span>
+                      <span>-{formatMoney(discountResult.discountAmount, currency)}</span>
+                    </div>
+                  )}
                   <p className="mb-3 text-xs text-ink-muted">
-                    Shipping, taxes and discounts calculated at checkout.
+                    Shipping and taxes calculated at checkout.
                   </p>
                   <Link href="/cart" onClick={closeOverlay} className="btn-outline mb-2 w-full">
                     View cart
@@ -245,6 +269,10 @@ export function CartDrawer() {
 }
 
 function EmptyCart({ onClose }: { onClose: () => void }) {
+  // Single-product stores send shoppers straight to the one product; catalog
+  // stores nudge them toward collections.
+  const featured = isSingleProduct ? getFeaturedProduct() : null;
+
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
       <div className="grid h-20 w-20 place-items-center rounded-full bg-surface-muted">
@@ -254,12 +282,20 @@ function EmptyCart({ onClose }: { onClose: () => void }) {
       <p className="mt-2 text-sm text-ink-muted">
         Discover something you’ll love — your next favourite is a click away.
       </p>
-      <Link href="/collections/best-sellers" onClick={onClose} className="btn-primary mt-6">
-        Shop best sellers
-      </Link>
-      <Link href="/collections/new-arrivals" onClick={onClose} className="mt-3 text-sm text-ink-soft link-underline">
-        Browse new arrivals
-      </Link>
+      {featured ? (
+        <Link href={`/products/${featured.slug}`} onClick={onClose} className="btn-primary mt-6">
+          Shop {featured.title}
+        </Link>
+      ) : (
+        <>
+          <Link href="/collections/best-sellers" onClick={onClose} className="btn-primary mt-6">
+            Shop best sellers
+          </Link>
+          <Link href="/collections/new-arrivals" onClick={onClose} className="mt-3 text-sm text-ink-soft link-underline">
+            Browse new arrivals
+          </Link>
+        </>
+      )}
     </div>
   );
 }

@@ -1,3 +1,6 @@
+import { isSingleProduct } from '@/lib/store-mode';
+import { SingleProductHome } from '@/components/home/single-product-home';
+
 import { Hero } from '@/components/home/hero';
 import { Marquee } from '@/components/home/marquee';
 import { FeaturedCollections } from '@/components/home/featured-collections';
@@ -14,6 +17,13 @@ import { NewsletterBand } from '@/components/home/newsletter-band';
 import { RecentlyViewed } from '@/components/product/recently-viewed';
 
 export default function HomePage() {
+  // The homepage adapts to the store mode set in src/config/site.ts:
+  //   'single'  → a focused one-product landing page (SingleProductHome).
+  //   'catalog' → the full multi-product storefront below.
+  if (isSingleProduct) {
+    return <SingleProductHome />;
+  }
+
   return (
     <>
       <Hero />

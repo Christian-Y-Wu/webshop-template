@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter, Fraunces } from 'next/font/google';
 import './globals.css';
 import { siteConfig } from '@/config/site';
+import { siteUrl } from '@/lib/site-url';
 import { buildMetadata, organizationJsonLd, websiteJsonLd } from '@/lib/seo';
 import { JsonLd } from '@/components/seo/json-ld';
 import { Providers } from '@/components/providers';
@@ -23,7 +24,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
+  metadataBase: new URL(siteUrl),
   ...buildMetadata({}),
   applicationName: siteConfig.name,
   authors: [{ name: siteConfig.legalName }],

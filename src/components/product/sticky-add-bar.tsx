@@ -12,16 +12,24 @@ import type { Product } from '@/lib/types';
  *  buy box. Thumb-friendly on mobile, compact on desktop. */
 export function StickyAddBar({ product }: { product: Product }) {
   const { addLine } = useStore();
-  const { openOverlay, toast, openQuickView } = useUI();
+  const { openOverlay, toast, openQuickView, setStickyBarVisible } = useUI();
   const [visible, setVisible] = useState(false);
   const soldOut = product.stock <= 0;
   const needsOptions = Boolean(product.sizes?.length);
 
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 640);
+    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Let floating marketing widgets (chat launcher, social-proof toast) know
+  // to move out of the way while this bar occupies the bottom of the screen.
+  useEffect(() => {
+    setStickyBarVisible(visible);
+    return () => setStickyBarVisible(false);
+  }, [visible, setStickyBarVisible]);
 
   function handle() {
     if (soldOut) return;
@@ -37,7 +45,7 @@ export function StickyAddBar({ product }: { product: Product }) {
   return (
     <div
       className={cn(
-        'fixed inset-x-0 bottom-0 z-40 border-t border-line bg-canvas/95 backdrop-blur-md transition-transform duration-300 ease-premium',
+        'fixed inset-x-0 bottom-0 z-[var(--z-sticky)] border-t border-line bg-canvas/95 backdrop-blur-md transition-transform duration-300 ease-premium',
         visible ? 'translate-y-0' : 'translate-y-full',
       )}
     >

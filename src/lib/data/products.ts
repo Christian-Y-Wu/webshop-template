@@ -5,6 +5,16 @@ import type { Product } from '@/lib/types';
    Replace with your real products. Prices are in the store base currency
    (USD by default). `images[].seed` drives the generated placeholder art;
    set `images[].src` to a real photo URL to override.
+
+   SINGLE-PRODUCT vs CATALOG:
+   - If you're launching with one product (`storeMode: 'single'` in
+     src/config/site.ts), you only need a single entry here. Set its `slug`
+     to match `featuredProductSlug` and the whole site is built around it.
+     The demo below ships a full catalogue only so the 'catalog' mode has
+     something to show — trim it down to your one product when you go live.
+   - As you add products, keep filling this array. Flip `storeMode` to
+     'catalog' once customers need to browse, and every product becomes
+     shoppable through collections and search automatically.
    ========================================================================== */
 
 const SIZES_APPAREL = ['XS', 'S', 'M', 'L', 'XL'];

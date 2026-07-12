@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { products } from '@/lib/data/products';
+import { searchProducts } from '@/lib/search';
 import { ProductGrid } from '@/components/product/product-grid';
 import { Breadcrumbs } from '@/components/ui/breadcrumbs';
 
@@ -12,17 +13,7 @@ export function SearchResults() {
   const initial = params.get('q') ?? '';
   const [query, setQuery] = useState(initial);
 
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return products.filter(
-      (p) =>
-        p.title.toLowerCase().includes(q) ||
-        p.subtitle?.toLowerCase().includes(q) ||
-        p.tags?.some((t) => t.includes(q)) ||
-        p.collections.some((c) => c.includes(q)),
-    );
-  }, [query]);
+  const results = useMemo(() => searchProducts(query), [query]);
 
   const bestSellers = products.filter((p) => p.bestSeller).slice(0, 4);
 

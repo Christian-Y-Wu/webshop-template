@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { siteConfig, type CurrencyConfig } from '@/config/site';
 import { translate, type TranslationKey } from '@/lib/i18n/dictionaries';
 import type { CartLine, Product } from '@/lib/types';
@@ -87,7 +87,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [savedForLater, setSavedForLater] = useState<CartLine[]>([]);
   const [currencyCode, setCurrencyCode] = useState<string>(siteConfig.defaultCurrency);
   const [locale, setLocale] = useState<string>(siteConfig.defaultLanguage);
-  const didHydrate = useRef(false);
 
   // Rehydrate once on mount
   useEffect(() => {
@@ -98,31 +97,35 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setSavedForLater(read(KEYS.saved, []));
     setCurrencyCode(read(KEYS.currency, siteConfig.defaultCurrency));
     setLocale(read(KEYS.locale, siteConfig.defaultLanguage));
-    didHydrate.current = true;
     setHydrated(true);
   }, []);
 
-  // Persist
+  // Persist. Gated on the `hydrated` *state* (not a ref) so these can't fire
+  // with stale pre-hydration values in the same commit as the rehydrate
+  // effect above — a ref flips synchronously and would still read this
+  // render's stale `lines` etc., overwriting localStorage with empty data
+  // before the real values ever get applied (most visible with React
+  // StrictMode's dev-mode double-invoked effects).
   useEffect(() => {
-    if (didHydrate.current) window.localStorage.setItem(KEYS.cart, JSON.stringify(lines));
-  }, [lines]);
+    if (hydrated) window.localStorage.setItem(KEYS.cart, JSON.stringify(lines));
+  }, [hydrated, lines]);
   useEffect(() => {
-    if (didHydrate.current) window.localStorage.setItem(KEYS.wishlist, JSON.stringify(wishlist));
-  }, [wishlist]);
+    if (hydrated) window.localStorage.setItem(KEYS.wishlist, JSON.stringify(wishlist));
+  }, [hydrated, wishlist]);
   useEffect(() => {
-    if (didHydrate.current) window.localStorage.setItem(KEYS.compare, JSON.stringify(compare));
-  }, [compare]);
+    if (hydrated) window.localStorage.setItem(KEYS.compare, JSON.stringify(compare));
+  }, [hydrated, compare]);
   useEffect(() => {
-    if (didHydrate.current) window.localStorage.setItem(KEYS.recent, JSON.stringify(recentlyViewed));
-  }, [recentlyViewed]);
+    if (hydrated) window.localStorage.setItem(KEYS.recent, JSON.stringify(recentlyViewed));
+  }, [hydrated, recentlyViewed]);
   useEffect(() => {
-    if (didHydrate.current) window.localStorage.setItem(KEYS.saved, JSON.stringify(savedForLater));
-  }, [savedForLater]);
+    if (hydrated) window.localStorage.setItem(KEYS.saved, JSON.stringify(savedForLater));
+  }, [hydrated, savedForLater]);
   useEffect(() => {
-    if (didHydrate.current) window.localStorage.setItem(KEYS.currency, JSON.stringify(currencyCode));
-  }, [currencyCode]);
+    if (hydrated) window.localStorage.setItem(KEYS.currency, JSON.stringify(currencyCode));
+  }, [hydrated, currencyCode]);
   useEffect(() => {
-    if (didHydrate.current) window.localStorage.setItem(KEYS.locale, JSON.stringify(locale));
+    if (hydrated) window.localStorage.setItem(KEYS.locale, JSON.stringify(locale));
   }, [locale]);
 
   const addLine = (input: AddLineInput) => {

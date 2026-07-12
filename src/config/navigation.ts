@@ -1,6 +1,17 @@
 /* ==========================================================================
    NAVIGATION — header mega-menu, footer, and utility links.
+
+   Two navigation sets ship here, one per store mode (see `storeMode` in
+   src/config/site.ts). The exported `mainNav` / `footerNav` resolve to the
+   right set automatically, so the header, mobile menu and footer never need
+   to know which mode they're in:
+
+     'single'  → a short, mega-menu-free nav that anchors to the sections of
+                 the single-product landing page.
+     'catalog' → the full mega-menu with collections and categories.
    ========================================================================== */
+
+import { siteConfig } from '@/config/site';
 
 export interface MegaColumn {
   heading: string;
@@ -25,7 +36,8 @@ export interface NavItem {
   };
 }
 
-export const mainNav: NavItem[] = [
+/* ---- Catalog mode: full mega-menu navigation ---------------------------- */
+const catalogNav: NavItem[] = [
   {
     label: 'New',
     href: '/collections/new-arrivals',
@@ -119,7 +131,20 @@ export const mainNav: NavItem[] = [
   { label: 'About', href: '/pages/about' },
 ];
 
-export const footerNav: { heading: string; links: { label: string; href: string }[] }[] = [
+/* ---- Single-product mode: short landing-page navigation ----------------- */
+// Anchors (/#…) jump to sections of the single-product homepage. The matching
+// section ids live in src/components/home/single-product-home.tsx.
+const singleNav: NavItem[] = [
+  { label: 'Overview', href: '/#product' },
+  { label: 'Details', href: '/#details' },
+  { label: 'Reviews', href: '/#reviews' },
+  { label: 'FAQ', href: '/#faq' },
+  { label: 'Contact', href: '/pages/contact' },
+];
+
+type FooterNav = { heading: string; links: { label: string; href: string }[] }[];
+
+const catalogFooterNav: FooterNav = [
   {
     heading: 'Shop',
     links: [
@@ -161,3 +186,47 @@ export const footerNav: { heading: string; links: { label: string; href: string 
     ],
   },
 ];
+
+const singleFooterNav: FooterNav = [
+  {
+    heading: 'The Product',
+    links: [
+      { label: 'Overview', href: '/#product' },
+      { label: 'Details & Care', href: '/#details' },
+      { label: 'Reviews', href: '/#reviews' },
+      { label: 'FAQ', href: '/#faq' },
+    ],
+  },
+  {
+    heading: 'Support',
+    links: [
+      { label: 'Contact Us', href: '/pages/contact' },
+      { label: 'Shipping', href: '/pages/shipping' },
+      { label: 'Returns & Exchanges', href: '/pages/returns' },
+      { label: 'Track Your Order', href: '/account/orders' },
+      { label: 'FAQ', href: '/pages/faq' },
+    ],
+  },
+  {
+    heading: 'Company',
+    links: [
+      { label: 'Our Story', href: '/pages/about' },
+      { label: 'Sustainability', href: '/pages/sustainability' },
+    ],
+  },
+  {
+    heading: 'Policies',
+    links: [
+      { label: 'Privacy Policy', href: '/pages/privacy' },
+      { label: 'Terms of Service', href: '/pages/terms' },
+      { label: 'Refund Policy', href: '/pages/returns' },
+      { label: 'Accessibility', href: '/pages/accessibility' },
+    ],
+  },
+];
+
+/* ---- Resolved exports (consumed by header, mobile menu, footer) --------- */
+const single = siteConfig.storeMode === 'single';
+
+export const mainNav: NavItem[] = single ? singleNav : catalogNav;
+export const footerNav: FooterNav = single ? singleFooterNav : catalogFooterNav;
