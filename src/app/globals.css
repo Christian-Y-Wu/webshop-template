@@ -91,6 +91,34 @@
   --color-accent-ink: 255 255 255;
 }
 
+/* --- Visitor-facing dark mode ----------------------------------------------
+   Toggled by stamping data-mode="dark" on <html> (see ThemeToggle and the
+   no-flash script in src/lib/theme.ts). Declared after the brand presets so
+   dark neutrals win over any light preset; brand accents carry over, with a
+   darker "soft" tint so chips/badges don't glow. The 'midnight' preset is
+   already dark, so the toggle hides itself there. */
+
+[data-mode='dark'] {
+  --color-canvas: 20 21 25;
+  --color-surface: 28 30 36;
+  --color-surface-muted: 36 39 47;
+  --color-ink: 237 236 233;
+  --color-ink-soft: 188 186 180;
+  --color-ink-muted: 138 136 130;
+  --color-line: 50 53 62;
+  --color-accent-soft: 63 44 44;
+  --color-highlight: 196 167 92;
+}
+
+[data-mode='dark'] .skeleton::after {
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 0.08),
+    transparent
+  );
+}
+
 /* ==========================================================================
    Base
    ========================================================================== */

@@ -8,6 +8,7 @@ import { mainNav } from '@/config/navigation';
 import { siteConfig } from '@/config/site';
 import { Logo } from '@/components/ui/logo';
 import { LocaleSwitcher } from '@/components/layout/locale-switcher';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { useUI } from '@/components/providers/ui-provider';
 import { useFocusTrap } from '@/lib/use-focus-trap';
 import { cn } from '@/lib/utils';
@@ -117,6 +118,7 @@ export function MobileMenu() {
 
             <div className="flex items-center justify-between border-t border-line px-5 py-4">
               <LocaleSwitcher align="left" />
+              <ThemeToggle />
               <a href={`mailto:${siteConfig.email}`} className="text-sm text-ink-muted">
                 {siteConfig.email}
               </a>

@@ -11,7 +11,8 @@
    the demo catalogue or any other content, so it's safe to re-run.
    ========================================================================== */
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { randomBytes } from 'node:crypto';
 import { join } from 'node:path';
 import prompts from 'prompts';
 import { slugify } from '../src/lib/utils';
@@ -20,6 +21,7 @@ const root = join(__dirname, '..');
 const sitePath = join(root, 'src/config/site.ts');
 const cssPath = join(root, 'src/app/globals.css');
 const productsPath = join(root, 'src/lib/data/products.ts');
+const envPath = join(root, '.env.local');
 
 function luminance(r: number, g: number, b: number) {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
@@ -87,6 +89,12 @@ async function main() {
         message: 'Short product description',
         initial: 'A thoughtfully made product, built to last.',
       },
+      {
+        type: 'confirm',
+        name: 'enableAdmin',
+        message: 'Enable the Admin Studio (/admin) with a generated password?',
+        initial: true,
+      },
     ],
     { onCancel: () => { console.log('\nSetup cancelled — no files changed.'); process.exit(1); } },
   );
@@ -139,7 +147,24 @@ async function main() {
   if (answers.storeMode === 'single') {
     console.log(`✓ Homepage set to focus on "${answers.productTitle}" (single-product mode)`);
   }
-  console.log('\nNext: npm run dev — then swap the placeholder image seed for a real photo when ready.\n');
+
+  // ---- Optionally enable the Admin Studio ----------------------------------
+  if (answers.enableAdmin) {
+    const existingEnv = existsSync(envPath) ? readFileSync(envPath, 'utf8') : '';
+    if (/^ADMIN_PASSWORD=.+$/m.test(existingEnv)) {
+      console.log('✓ Admin Studio already enabled (ADMIN_PASSWORD found in .env.local)');
+    } else {
+      // URL-safe passphrase, ~26 chars of entropy — plenty for a rate-limited login.
+      const password = randomBytes(18).toString('base64url');
+      const line = `ADMIN_PASSWORD=${password}\n`;
+      writeFileSync(envPath, existingEnv ? `${existingEnv.replace(/\n?$/, '\n')}${line}` : line);
+      console.log('✓ Admin Studio enabled — your admin password (also saved to .env.local):');
+      console.log(`\n    ${password}\n`);
+      console.log('  Keep it somewhere safe; you need it to open /admin.');
+    }
+  }
+
+  console.log('\nNext: npm run dev — then open http://localhost:3000/admin to configure everything visually.\n');
 }
 
 main();

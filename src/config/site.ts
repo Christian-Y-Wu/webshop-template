@@ -1,9 +1,27 @@
 /* ==========================================================================
    SITE CONFIG — the primary rebranding surface.
-   Change the brand identity, contact details, feature flags, supported
-   currencies/languages and announcement bar here. Nothing else needs editing
-   to stand up a new store's shell.
+
+   This file holds the DEFAULTS (the demo store). Your own store's values live
+   in `store-settings.json` next to this file — edit them visually in the
+   Admin Studio (`/admin` while `npm run dev` is running) or by hand. Anything
+   set there overrides the default below; anything omitted falls through.
+
+   You can still edit this file directly — both layers are merged into the
+   single `siteConfig` object the whole storefront reads.
    ========================================================================== */
+
+import storeSettings from './store-settings.json';
+import {
+  CURRENCY_CATALOG,
+  LANGUAGE_CATALOG,
+  type ColorModeConfig,
+  type FeatureFlags,
+  type SiteTheme,
+  type SocialLinks,
+  type StoreMode,
+  type StoreSettings,
+  type TrustConfig,
+} from './settings-schema';
 
 export interface CurrencyConfig {
   code: string;
@@ -35,7 +53,45 @@ export interface DiscountCode {
   value?: number;
 }
 
-export const siteConfig = {
+export interface SiteConfig {
+  name: string;
+  legalName: string;
+  tagline: string;
+  description: string;
+  url: string;
+  locale: string;
+  theme: SiteTheme;
+  colorMode: ColorModeConfig;
+  /** Custom accent hex (e.g. "#b2583f") — null keeps the CSS default. */
+  accentColor: string | null;
+  storeMode: StoreMode;
+  featuredProductSlug: string;
+  email: string;
+  phone: string;
+  address: string;
+  social: SocialLinks;
+  announcements: AnnouncementItem[];
+  countdownTo: string;
+  countdownLabel: string;
+  features: FeatureFlags;
+  freeShippingThreshold: number;
+  giftWrapPrice: number;
+  discountCodes: DiscountCode[];
+  defaultCurrency: string;
+  currencies: CurrencyConfig[];
+  defaultLanguage: string;
+  languages: LanguageConfig[];
+  trust: TrustConfig;
+  payments: string[];
+  hideDemoCatalog: boolean;
+}
+
+/* ==========================================================================
+   DEFAULTS — the demo store. `npm run setup` patches the literals below;
+   the Admin Studio writes to store-settings.json instead.
+   ========================================================================== */
+
+const defaults: SiteConfig = {
   name: 'AURA',
   legalName: 'Aura Studio Ltd.',
   tagline: 'Considered essentials for a beautiful everyday.',
@@ -44,7 +100,12 @@ export const siteConfig = {
   url: 'https://aura-template.example.com',
   locale: 'en',
   /** A store-wide theme preset. See globals.css: '', 'midnight', 'botanic', 'cobalt'. */
-  theme: '' as '' | 'midnight' | 'botanic' | 'cobalt',
+  theme: '' as SiteTheme,
+
+  /** Light/dark mode: the default before a visitor chooses, and whether the
+   *  header shows a toggle. 'system' follows the visitor's OS preference. */
+  colorMode: { default: 'light', showToggle: true },
+  accentColor: null,
 
   /* ======================================================================
      STORE MODE — the single most important decision for this template.
@@ -62,10 +123,9 @@ export const siteConfig = {
 
      Start in 'single'. When you add enough products that customers need to
      browse and filter, flip this one line to 'catalog' — every page adapts
-     automatically. Nothing else needs to change to grow from one product to
-     a full shop. See src/lib/store-mode.ts for the helpers that read this.
+     automatically. See src/lib/store-mode.ts for the helpers that read this.
      ====================================================================== */
-  storeMode: 'single' as 'single' | 'catalog',
+  storeMode: 'single' as StoreMode,
 
   /**
    * In 'single' mode, the slug of the one product the entire site revolves
@@ -93,7 +153,7 @@ export const siteConfig = {
     { text: 'Complimentary shipping on orders over $75 — worldwide', href: '/pages/shipping' },
     { text: 'Loved by 12,000+ customers · Rated 4.8 out of 5', href: '/#reviews' },
     { text: '30-day easy returns · Free & carbon-neutral', href: '/pages/returns' },
-  ] as AnnouncementItem[],
+  ],
   /** ISO date the promotional countdown counts down to. */
   countdownTo: '2026-08-31T23:59:59',
   countdownLabel: 'Launch offer ends in',
@@ -122,28 +182,16 @@ export const siteConfig = {
   discountCodes: [
     { code: 'WELCOME10', description: '10% off your first order', kind: 'percent', value: 10 },
     { code: 'FREESHIP', description: 'Free shipping on this order', kind: 'freeShipping' },
-  ] as DiscountCode[],
+  ],
 
   // ---- Internationalisation --------------------------------------------
   defaultCurrency: 'USD',
-  currencies: [
-    { code: 'USD', symbol: '$', label: 'US Dollar', rate: 1, locale: 'en-US', flag: '🇺🇸' },
-    { code: 'EUR', symbol: '€', label: 'Euro', rate: 0.92, locale: 'de-DE', flag: '🇪🇺' },
-    { code: 'GBP', symbol: '£', label: 'British Pound', rate: 0.79, locale: 'en-GB', flag: '🇬🇧' },
-    { code: 'DKK', symbol: 'kr', label: 'Danish Krone', rate: 6.9, locale: 'da-DK', flag: '🇩🇰' },
-    { code: 'CAD', symbol: '$', label: 'Canadian Dollar', rate: 1.36, locale: 'en-CA', flag: '🇨🇦' },
-    { code: 'AUD', symbol: '$', label: 'Australian Dollar', rate: 1.51, locale: 'en-AU', flag: '🇦🇺' },
-    { code: 'JPY', symbol: '¥', label: 'Japanese Yen', rate: 156, locale: 'ja-JP', flag: '🇯🇵' },
-  ] as CurrencyConfig[],
+  currencies: CURRENCY_CATALOG.filter((c) =>
+    ['USD', 'EUR', 'GBP', 'DKK', 'CAD', 'AUD', 'JPY'].includes(c.code),
+  ),
 
   defaultLanguage: 'en',
-  languages: [
-    { code: 'en', label: 'English', flag: '🇬🇧' },
-    { code: 'da', label: 'Dansk', flag: '🇩🇰' },
-    { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
-    { code: 'fr', label: 'Français', flag: '🇫🇷' },
-    { code: 'es', label: 'Español', flag: '🇪🇸' },
-  ] as LanguageConfig[],
+  languages: LANGUAGE_CATALOG.filter((l) => ['en', 'da', 'de', 'fr', 'es'].includes(l.code)),
 
   // ---- Trust ------------------------------------------------------------
   trust: {
@@ -153,6 +201,71 @@ export const siteConfig = {
   },
 
   payments: ['visa', 'mastercard', 'amex', 'paypal', 'applepay', 'googlepay', 'shoppay', 'klarna'],
-} as const;
 
-export type SiteConfig = typeof siteConfig;
+  /** Hide the demo catalogue once your own products are in
+   *  src/lib/data/custom-products.json (managed from /admin/products). */
+  hideDemoCatalog: false,
+};
+
+/* ==========================================================================
+   MERGE — overlay store-settings.json on the defaults.
+   ========================================================================== */
+
+export function applyStoreSettings(base: SiteConfig, settings: StoreSettings): SiteConfig {
+  const pickCurrencies = settings.currencyCodes
+    ? CURRENCY_CATALOG.filter((c) => settings.currencyCodes!.includes(c.code))
+    : base.currencies;
+  const pickLanguages = settings.languageCodes
+    ? LANGUAGE_CATALOG.filter((l) => settings.languageCodes!.includes(l.code))
+    : base.languages;
+
+  const merged: SiteConfig = {
+    ...base,
+    ...Object.fromEntries(
+      Object.entries({
+        name: settings.name,
+        legalName: settings.legalName,
+        tagline: settings.tagline,
+        description: settings.description,
+        url: settings.url,
+        locale: settings.locale,
+        theme: settings.theme,
+        accentColor: settings.accentColor,
+        storeMode: settings.storeMode,
+        featuredProductSlug: settings.featuredProductSlug,
+        email: settings.email,
+        phone: settings.phone,
+        address: settings.address,
+        announcements: settings.announcements,
+        countdownTo: settings.countdownTo,
+        countdownLabel: settings.countdownLabel,
+        freeShippingThreshold: settings.freeShippingThreshold,
+        giftWrapPrice: settings.giftWrapPrice,
+        discountCodes: settings.discountCodes,
+        defaultCurrency: settings.defaultCurrency,
+        defaultLanguage: settings.defaultLanguage,
+        payments: settings.payments,
+        hideDemoCatalog: settings.hideDemoCatalog,
+      }).filter(([, v]) => v !== undefined),
+    ),
+    colorMode: { ...base.colorMode, ...settings.colorMode },
+    social: { ...base.social, ...settings.social },
+    features: { ...base.features, ...settings.features },
+    trust: { ...base.trust, ...settings.trust },
+    currencies: pickCurrencies.length ? pickCurrencies : base.currencies,
+    languages: pickLanguages.length ? pickLanguages : base.languages,
+  };
+
+  // Never let a bad override strand the store without a valid default
+  // currency/language.
+  if (!merged.currencies.some((c) => c.code === merged.defaultCurrency)) {
+    merged.defaultCurrency = merged.currencies[0].code;
+  }
+  if (!merged.languages.some((l) => l.code === merged.defaultLanguage)) {
+    merged.defaultLanguage = merged.languages[0].code;
+  }
+  return merged;
+}
+
+export const siteDefaults = defaults;
+export const siteConfig: SiteConfig = applyStoreSettings(defaults, storeSettings as StoreSettings);

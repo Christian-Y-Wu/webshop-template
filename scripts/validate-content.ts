@@ -12,9 +12,10 @@
    Runs automatically via the "predev"/"prebuild" npm scripts.
    ========================================================================== */
 
-import { products } from '../src/lib/data/products';
+import { customProducts, products } from '../src/lib/data/products';
 import { collections } from '../src/lib/data/collections';
 import { siteConfig } from '../src/config/site';
+import { validateProducts } from '../src/lib/admin/validate-products';
 
 function levenshtein(a: string, b: string): number {
   const rows = a.length + 1;
@@ -70,6 +71,19 @@ function suggestionSuffix(target: string, candidates: Iterable<string>): string 
 const collectionHandles = new Set(collections.map((c) => c.handle));
 const productIds = new Set(products.map((p) => p.id));
 const productSlugs = new Set(products.map((p) => p.slug));
+
+/* ---- Custom products (custom-products.json) -------------------------------
+   The Admin Studio validates on save, but the file is also hand-editable —
+   catch a malformed entry before it breaks a page at runtime. */
+if (products.length === 0) {
+  fail(
+    'The catalogue is empty: hideDemoCatalog is enabled but custom-products.json has no products. ' +
+      'Add a product in the Admin Studio (/admin/products) or disable hideDemoCatalog.',
+  );
+}
+for (const problem of validateProducts(customProducts, { collectionHandles }).errors) {
+  fail(`custom-products.json: ${problem}`);
+}
 
 /* ---- Uniqueness ----------------------------------------------------------- */
 const dupSlugs = findDuplicates(products.map((p) => p.slug));

@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { Heart, LayoutDashboard, LogOut, MapPin, Package, Settings } from 'lucide-react';
 import { Breadcrumbs } from '@/components/ui/breadcrumbs';
+import { useAuth } from '@/components/providers/auth-provider';
 import { cn } from '@/lib/utils';
 
 const nav = [
@@ -24,6 +26,26 @@ export function AccountShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, hydrated, logout } = useAuth();
+
+  // The account area requires a session — bounce to sign-in once we know.
+  useEffect(() => {
+    if (hydrated && !user) router.replace('/account/login');
+  }, [hydrated, user, router]);
+
+  if (!hydrated || !user) {
+    return (
+      <div className="container-page py-8 lg:py-12">
+        <div className="grid gap-8 lg:grid-cols-[240px_1fr] lg:gap-12">
+          <div className="skeleton h-72 rounded-card" />
+          <div className="skeleton h-72 rounded-card" />
+        </div>
+      </div>
+    );
+  }
+
+  const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ');
 
   return (
     <div className="container-page py-8 lg:py-12">
@@ -42,11 +64,11 @@ export function AccountShell({
           <div className="rounded-card border border-line bg-surface p-5">
             <div className="flex items-center gap-3 border-b border-line pb-4">
               <span className="grid h-11 w-11 place-items-center rounded-full bg-accent-soft font-serif text-lg text-accent">
-                A
+                {(user.firstName[0] ?? 'A').toUpperCase()}
               </span>
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-ink">Alex Morgan</p>
-                <p className="truncate text-xs text-ink-muted">alex@example.com</p>
+                <p className="truncate text-sm font-medium text-ink">{fullName}</p>
+                <p className="truncate text-xs text-ink-muted">{user.email}</p>
               </div>
             </div>
             <nav className="mt-4 space-y-1">
@@ -66,12 +88,15 @@ export function AccountShell({
                   </Link>
                 );
               })}
-              <Link
-                href="/account/login"
-                className="mt-2 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-ink-soft transition-colors hover:bg-surface-muted hover:text-sale"
+              <button
+                onClick={() => {
+                  logout();
+                  router.push('/');
+                }}
+                className="mt-2 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-ink-soft transition-colors hover:bg-surface-muted hover:text-sale"
               >
                 <LogOut size={17} /> Sign out
-              </Link>
+              </button>
             </nav>
           </div>
         </aside>

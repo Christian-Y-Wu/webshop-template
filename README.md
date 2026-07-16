@@ -6,8 +6,13 @@ Niche-agnostic by design: fashion, beauty, electronics, home, fitness, supplemen
 
 ```
 Editorial serif + clean sans · warm ivory canvas · configurable accent
-Fully responsive · accessible · SEO-optimized · animated · i18n-ready
+Light & dark mode · admin studio · fully responsive · accessible
+SEO-optimized · animated · i18n-complete in 5 languages
 ```
+
+**New:** a password-protected **Admin Studio** at `/admin` — one big form
+where the store owner fills out *everything* (brand, products, design,
+features, SEO) with zero code. See [Admin Studio](#-admin-studio-admin).
 
 ---
 
@@ -41,14 +46,18 @@ outgrow the template; you just add products and change one line.
 
 ## ✨ Highlights
 
+- **Admin Studio** — a secure `/admin` cockpit: one big settings form, a product manager and a self-updating launch checklist. Configure the whole store without touching code.
+- **Light & dark mode** — flash-free, system-aware, persisted per visitor; the store picks the default and can hide the toggle.
 - **Fully designed pages** — homepage, product, collection, cart, checkout, search, account, blog, policies, contact, 404.
-- **Config-driven** — brand, currencies, languages, announcements, feature flags all live in [`src/config`](src/config).
+- **Working account flow** — register/sign-in/sign-out demo with a personalised dashboard (clearly labeled, per-browser, no passwords stored) and a one-file seam to plug in Auth.js/Clerk/Shopify accounts.
+- **Security-hardened** — rate-limited constant-time admin login, signed HttpOnly sessions, CSRF checks, strict security headers, validated checkout input. See [SECURITY.md](SECURITY.md).
+- **Config-driven** — brand, currencies, languages, announcements, feature flags all live in [`src/config`](src/config); your overrides live in one portable JSON file.
 - **Zero image assets required** — a deterministic "studio gradient" placeholder system ([`MediaImage`](src/components/ui/media-image.tsx)) makes a fresh install look complete. Drop in real photos any time.
 - **Commerce state** — cart, wishlist, compare, recently-viewed, save-for-later, currency & locale — all persisted to `localStorage`.
 - **Real checkout** — Stripe Checkout, working discount codes, a demo-mode fallback when no key is configured (see [Taking payments](#-taking-payments)).
 - **Conversion features** — slide-out cart, free-shipping progress bar, quick add, quick view, sticky add-to-cart, countdown timers, gift wrapping, newsletter popup and social-proof toasts that never stack or overlap, live-chat widget.
 - **Typo-tolerant search** — ranked, fuzzy product search (Fuse.js), not just plain substring matching.
-- **Internationalization** — currency + language switcher, translation dictionary with graceful fallback, localized pricing.
+- **Internationalization** — currency + language switcher, complete UI dictionaries for English, Danish, German, French and Spanish, graceful fallback, localized pricing, `<html lang>`/RTL aware.
 - **SEO** — per-page metadata, Open Graph + Twitter cards, dynamic OG image, JSON-LD (Organization, WebSite, Product, Breadcrumb, FAQ), `sitemap.xml`, `robots.txt`, canonical URLs, breadcrumbs.
 - **Accessible** — keyboard nav, focus-visible rings, skip link, ARIA labels, `prefers-reduced-motion` support, and every drawer/modal/lightbox traps focus and restores it on close.
 - **Touch-friendly gallery** — swipeable product images and lightbox on mobile (Embla Carousel), hover-zoom on desktop.
@@ -60,8 +69,8 @@ outgrow the template; you just add products and change one line.
 
 ```bash
 npm install
-npm run setup    # guided: brand, accent colour, store mode, first product
-npm run dev      # http://localhost:3000
+npm run setup    # guided: brand, accent colour, store mode, first product, admin password
+npm run dev      # http://localhost:3000  ·  admin at /admin
 npm run build    # production build
 npm run start    # serve the production build
 ```
@@ -69,14 +78,46 @@ npm run start    # serve the production build
 Requires Node 18.18+ (tested on Node 24).
 
 `npm run setup` is the fastest path from "cloned the repo" to a branded,
-running store — it asks a few questions and writes the answers straight into
-`site.ts`, `globals.css` and `products.ts`. It's optional and safe to skip or
-re-run; everything it touches can also be edited by hand (see the checklist
-below).
+running store — it asks a few questions, writes the answers into the config
+files, and can generate your Admin Studio password. From there, do the rest
+visually at **`/admin`**.
 
 Copy [`.env.example`](.env.example) to `.env.local` if you want real Stripe
 Checkout — see [Taking payments](#-taking-payments) below. Nothing in
 `.env.local` is required to run the template.
+
+**📖 Full walk-through:** [docs/SETUP-GUIDE.md](docs/SETUP-GUIDE.md) ·
+**✅ Printable checklist:** [docs/LAUNCH-CHECKLIST.md](docs/LAUNCH-CHECKLIST.md)
+
+---
+
+## 🎛 Admin Studio (`/admin`)
+
+The template's answer to "make launching as SaaS-easy as possible": a
+password-protected studio where the owner fills out **one big form** and the
+store is configured — no code, no hunting through files.
+
+| Page | Covers |
+| --- | --- |
+| **Store settings** | Brand & identity, contact, store mode + featured product, theme/accent/dark-mode, announcements & countdown, all 11 feature flags, discount codes, currencies & languages, social links, trust numbers, payment badges, SEO/domain, demo-catalogue visibility — one Save button. |
+| **Products** | Add, edit, duplicate and delete products (title, price, images, colours, sizes, collections, stock, flags). Demo products can be duplicated as starting points. |
+| **Launch checklist** | Live launch progress — most items tick themselves as the config changes. |
+
+How it works (and why it's safe):
+
+- Enabled only when `ADMIN_PASSWORD` is set (`npm run setup` generates one).
+  Login is rate-limited with constant-time comparison; sessions are signed
+  HttpOnly cookies verified by middleware on every request.
+- Saving writes two plain JSON files — [`src/config/store-settings.json`](src/config/store-settings.json)
+  and [`src/lib/data/custom-products.json`](src/lib/data/custom-products.json) —
+  which hot-reload the dev server instantly (keep the storefront open in a
+  second tab as a live preview) and get committed with your repo.
+- **Writes only work in local dev.** A deployed store is immutable: even a
+  stolen admin session can't deface it. Edit locally → commit → deploy.
+- Those two JSON files *are* the store's identity — copy them into a fresh
+  clone of the template and you've re-created the store. That's the whole
+  re-use story for spinning up store #2, #3, … (details in the
+  [setup guide](docs/SETUP-GUIDE.md#-reusing-the-template-for-your-next-store)).
 
 ---
 
@@ -107,19 +148,19 @@ domain and set `NEXT_PUBLIC_SITE_URL` when you have one. For real payments, add
 
 ## 🎨 Rebranding checklist
 
-Everything below is data — no component surgery required.
+**The easy way: open `/admin` and fill out the form.** Everything the studio
+writes can also be edited by hand — it's all data, no component surgery:
 
 | To change… | Edit |
 | --- | --- |
-| **Store mode** (single-product vs full catalogue) + the featured product | [`src/config/site.ts`](src/config/site.ts) (`storeMode`, `featuredProductSlug`) |
-| Discount codes (redeemable in the cart and at checkout) | [`src/config/site.ts`](src/config/site.ts) (`discountCodes`) |
-| Brand name, tagline, contact, socials, announcements, currencies, languages, feature flags, trust stats | [`src/config/site.ts`](src/config/site.ts) |
+| **Anything the studio covers** (brand, mode, design, features, discounts, i18n, socials, trust, SEO) | [`src/config/store-settings.json`](src/config/store-settings.json) — or the defaults in [`src/config/site.ts`](src/config/site.ts) |
+| **Your products** | [`src/lib/data/custom-products.json`](src/lib/data/custom-products.json) — or `/admin/products` |
 | Header mega-menu & footer links | [`src/config/navigation.ts`](src/config/navigation.ts) |
 | Colours, fonts, radius, shadows | [`src/app/globals.css`](src/app/globals.css) (CSS variables) + [`tailwind.config.ts`](tailwind.config.ts) |
-| Products | [`src/lib/data/products.ts`](src/lib/data/products.ts) |
+| Demo catalogue (or delete it) | [`src/lib/data/products.ts`](src/lib/data/products.ts) |
 | Collections | [`src/lib/data/collections.ts`](src/lib/data/collections.ts) |
 | Reviews / testimonials / blog / FAQ / policy pages | [`src/lib/data/`](src/lib/data) |
-| UI translations | [`src/lib/i18n/dictionaries.ts`](src/lib/i18n/dictionaries.ts) |
+| UI translations (5 languages ship complete) | [`src/lib/i18n/dictionaries.ts`](src/lib/i18n/dictionaries.ts) |
 
 ### Change the colour scheme
 
@@ -133,11 +174,16 @@ The whole theme is driven by CSS custom properties in [`globals.css`](src/app/gl
 }
 ```
 
-Four ready-made presets ship in the same file — activate one by setting `theme` in `site.ts`:
+Four ready-made presets ship in the same file — pick one in the studio's
+Design section (or set `theme` in `site.ts`):
 
 ```ts
 theme: 'midnight' // '' | 'midnight' | 'botanic' | 'cobalt'
 ```
+
+Visitors also get a **light/dark toggle** in the header (flash-free,
+system-aware, persisted). The store chooses the default mode — and whether
+the toggle shows at all — in the studio's Design section.
 
 ### Use real product photos
 
@@ -217,6 +263,7 @@ Product data is still static (this is a **frontend template**) — to go live wi
 
 - Replace the functions in [`src/lib/data/products.ts`](src/lib/data/products.ts) / `collections.ts` with fetches to **Shopify Storefront API**, Medusa, Swell, BigCommerce, etc.
 - Extend [`src/app/api/checkout/route.ts`](src/app/api/checkout/route.ts) to price line items from that backend instead of trusting the client cart.
+- Swap the demo customer auth in [`src/components/providers/auth-provider.tsx`](src/components/providers/auth-provider.tsx) for Auth.js, Clerk, Supabase Auth or your platform's customer accounts — the account UI already consumes its `user / login / register / logout` interface.
 - Hook the newsletter/contact forms to your ESP (Klaviyo, Mailchimp…).
 
 The `CartLine` / `Product` types in [`src/lib/types.ts`](src/lib/types.ts) are the contract to map against.
@@ -237,6 +284,14 @@ npm test          # Vitest + React Testing Library smoke tests
 Next.js 14 · React 18 · TypeScript · Tailwind CSS 3 · Framer Motion · lucide-react ·
 Embla Carousel · Fuse.js (search) · Stripe · Inter + Fraunces (`next/font`) ·
 Vitest + React Testing Library · `tsx` + `prompts` (setup/validation scripts).
+
+---
+
+## 📚 Docs
+
+- [docs/SETUP-GUIDE.md](docs/SETUP-GUIDE.md) — clone → configure → deploy, step by step, plus how to reuse the template for your next store.
+- [docs/LAUNCH-CHECKLIST.md](docs/LAUNCH-CHECKLIST.md) — printable go-live checklist (the live version is `/admin/launch`).
+- [SECURITY.md](SECURITY.md) — the security model, what's hardened, and the two documented limitations to fix before scaling.
 
 ---
 

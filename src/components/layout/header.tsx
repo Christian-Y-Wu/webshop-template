@@ -9,6 +9,7 @@ import { siteConfig } from '@/config/site';
 import { Logo } from '@/components/ui/logo';
 import { LocaleSwitcher } from '@/components/layout/locale-switcher';
 import { MegaMenu } from '@/components/layout/mega-menu';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { useStore } from '@/components/providers/store-provider';
 import { useUI } from '@/components/providers/ui-provider';
 import { cn } from '@/lib/utils';
@@ -74,6 +75,7 @@ export function Header() {
             <div className="hidden md:block">
               <LocaleSwitcher />
             </div>
+            <ThemeToggle />
             <button
               onClick={() => openOverlay('search')}
               className="btn-ghost px-2.5"

@@ -1,10 +1,17 @@
 import type { Product } from '@/lib/types';
+import { siteConfig } from '@/config/site';
+import customProductsJson from './custom-products.json';
 
 /* ==========================================================================
    PRODUCT CATALOGUE (placeholder)
    Replace with your real products. Prices are in the store base currency
    (USD by default). `images[].seed` drives the generated placeholder art;
    set `images[].src` to a real photo URL to override.
+
+   YOUR products live in `custom-products.json` next to this file — add and
+   edit them visually in the Admin Studio (/admin/products) or by hand. They
+   are listed ahead of the demo catalogue below, and the demo catalogue
+   disappears entirely once you set `hideDemoCatalog` in the studio.
 
    SINGLE-PRODUCT vs CATALOG:
    - If you're launching with one product (`storeMode: 'single'` in
@@ -19,7 +26,7 @@ import type { Product } from '@/lib/types';
 
 const SIZES_APPAREL = ['XS', 'S', 'M', 'L', 'XL'];
 
-export const products: Product[] = [
+const demoProducts: Product[] = [
   {
     id: 'p-aria-knit',
     slug: 'aria-merino-sweater',
@@ -666,6 +673,21 @@ export const products: Product[] = [
 ];
 
 /* ---- Lookup helpers ------------------------------------------------------ */
+
+/** Products managed from the Admin Studio (custom-products.json). */
+export const customProducts = customProductsJson as unknown as Product[];
+
+/** The built-in demo catalogue (used by the Admin Studio product manager). */
+export const demoCatalog = demoProducts;
+
+/** IDs of the demo entries above — used to label them in the Admin Studio. */
+export const demoProductIds = new Set(demoProducts.map((p) => p.id));
+
+/** The live catalogue: your products first, then the demo set (unless hidden). */
+export const products: Product[] = [
+  ...customProducts,
+  ...(siteConfig.hideDemoCatalog ? [] : demoProducts),
+];
 
 export const productMap = new Map(products.map((p) => [p.slug, p]));
 export const productMapById = new Map(products.map((p) => [p.id, p]));

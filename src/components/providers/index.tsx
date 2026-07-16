@@ -1,10 +1,12 @@
 'use client';
 
+import { AuthProvider } from '@/components/providers/auth-provider';
 import { StoreProvider } from '@/components/providers/store-provider';
 import { UIProvider } from '@/components/providers/ui-provider';
 import { CartDrawer } from '@/components/layout/cart-drawer';
 import { MobileMenu } from '@/components/layout/mobile-menu';
 import { SearchOverlay } from '@/components/layout/search-overlay';
+import { useIsAdminRoute } from '@/components/layout/site-chrome';
 import { QuickView } from '@/components/product/quick-view';
 import { Toaster } from '@/components/ui/toaster';
 import { NewsletterPopup, RecentlyPurchasedPopup, LiveChatButton } from '@/components/marketing/popups';
@@ -15,23 +17,31 @@ import { NewsletterPopup, RecentlyPurchasedPopup, LiveChatButton } from '@/compo
  * drawers, modals, toasts and marketing popups mount exactly once.
  */
 export function Providers({ children }: { children: React.ReactNode }) {
+  const isAdmin = useIsAdminRoute();
+
   return (
     <StoreProvider>
-      <UIProvider>
-        {children}
+      <AuthProvider>
+        <UIProvider>
+          {children}
 
-        {/* Overlays */}
-        <CartDrawer />
-        <MobileMenu />
-        <SearchOverlay />
-        <QuickView />
+          {/* Global feedback — used by storefront and Admin Studio alike */}
+          <Toaster />
 
-        {/* Global feedback + marketing */}
-        <Toaster />
-        <NewsletterPopup />
-        <RecentlyPurchasedPopup />
-        <LiveChatButton />
-      </UIProvider>
+          {/* Storefront-only overlays and marketing widgets */}
+          {!isAdmin && (
+            <>
+              <CartDrawer />
+              <MobileMenu />
+              <SearchOverlay />
+              <QuickView />
+              <NewsletterPopup />
+              <RecentlyPurchasedPopup />
+              <LiveChatButton />
+            </>
+          )}
+        </UIProvider>
+      </AuthProvider>
     </StoreProvider>
   );
 }

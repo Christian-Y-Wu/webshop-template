@@ -126,7 +126,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }, [hydrated, currencyCode]);
   useEffect(() => {
     if (hydrated) window.localStorage.setItem(KEYS.locale, JSON.stringify(locale));
-  }, [locale]);
+  }, [hydrated, locale]);
+
+  // Keep <html lang> (and text direction, for RTL locales) in sync with the
+  // visitor's language choice — screen readers and search engines read it.
+  useEffect(() => {
+    if (!hydrated) return;
+    document.documentElement.lang = locale;
+    const lang = siteConfig.languages.find((l) => l.code === locale);
+    document.documentElement.dir = lang?.dir ?? 'ltr';
+  }, [hydrated, locale]);
 
   const addLine = (input: AddLineInput) => {
     const { product, color, size, quantity = 1, giftWrap = false } = input;
