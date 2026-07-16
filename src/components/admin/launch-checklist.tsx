@@ -58,6 +58,21 @@ function buildGroups(c: AdminConfig): Group[] {
           href: '/admin#announcements',
         },
         {
+          id: 'hero-copy',
+          label: 'Homepage copy is yours',
+          detail: 'The hero headline and founder story ship as placeholder copy — rewrite them in your own words.',
+          done:
+            e.hero.heading !== 'Considered essentials for a beautiful everyday' &&
+            e.story.founderName !== 'Elena Marlowe',
+          href: '/admin#homepage',
+        },
+        {
+          id: 'home-sections',
+          label: 'Homepage sections reviewed',
+          detail: 'Switch off any section you don’t need (story, Instagram, journal…) — a shorter page that fits your brand beats a longer one that doesn’t.',
+          href: '/admin#homepage',
+        },
+        {
           id: 'legal',
           label: 'Policy pages reviewed',
           detail: 'Shipping, returns, privacy and terms ship with placeholder copy — replace before charging real customers (src/lib/data/pages.ts).',

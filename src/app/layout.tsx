@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Fraunces } from 'next/font/google';
+import { Inter, Fraunces, Playfair_Display, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { siteConfig } from '@/config/site';
 import { siteUrl } from '@/lib/site-url';
@@ -23,6 +23,24 @@ const fraunces = Fraunces({
   variable: '--font-fraunces',
   display: 'swap',
   axes: ['opsz'],
+});
+
+// Alternate heading faces for the 'modern' / 'classic' font presets
+// (see fontPreset in src/config/site.ts). preload: false keeps them free
+// for stores using the default pairing — the browser only downloads the
+// face the active preset actually renders with.
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-space-grotesk',
+  display: 'swap',
+  preload: false,
+});
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+  display: 'swap',
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -51,7 +69,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang={siteConfig.locale}
       data-theme={siteConfig.theme || undefined}
-      className={`${inter.variable} ${fraunces.variable}`}
+      data-font={siteConfig.fontPreset !== 'editorial' ? siteConfig.fontPreset : undefined}
+      className={`${inter.variable} ${fraunces.variable} ${spaceGrotesk.variable} ${playfair.variable}`}
       suppressHydrationWarning
     >
       <body className="min-h-screen antialiased">

@@ -41,7 +41,7 @@ cockpit of the template — everything an owner needs, no code:
 
 | Page | What you do there |
 | --- | --- |
-| **Store settings** | The big form: brand, contact, store mode, design (theme, accent colour, light/dark), announcements, feature toggles, discount codes, currencies & languages, social links, trust numbers, SEO/domain. One Save button. |
+| **Store settings** | The big form: brand, contact, store mode, design (8 theme presets, 4 font pairings, accent colour, light/dark), announcements, homepage composer (per-section toggles + hero copy), founder story & timeline, newsletter copy, feature toggles, discount codes, currencies & languages, social links, trust numbers, SEO/domain. One Save button. |
 | **Products** | Add/edit/delete your products; duplicate demo entries as starting points; hide the demo catalogue when yours are ready. |
 | **Launch checklist** | Live progress toward launch — items tick themselves as you configure. |
 

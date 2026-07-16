@@ -16,10 +16,15 @@ import {
   LANGUAGE_CATALOG,
   type ColorModeConfig,
   type FeatureFlags,
+  type FontPreset,
+  type HeroContent,
+  type HomeSections,
+  type NewsletterContent,
   type SiteTheme,
   type SocialLinks,
   type StoreMode,
   type StoreSettings,
+  type StoryContent,
   type TrustConfig,
 } from './settings-schema';
 
@@ -61,6 +66,7 @@ export interface SiteConfig {
   url: string;
   locale: string;
   theme: SiteTheme;
+  fontPreset: FontPreset;
   colorMode: ColorModeConfig;
   /** Custom accent hex (e.g. "#b2583f") — null keeps the CSS default. */
   accentColor: string | null;
@@ -73,6 +79,10 @@ export interface SiteConfig {
   announcements: AnnouncementItem[];
   countdownTo: string;
   countdownLabel: string;
+  hero: HeroContent;
+  story: StoryContent;
+  newsletter: NewsletterContent;
+  homeSections: HomeSections;
   features: FeatureFlags;
   freeShippingThreshold: number;
   giftWrapPrice: number;
@@ -99,8 +109,13 @@ const defaults: SiteConfig = {
     'AURA is a premium lifestyle store offering thoughtfully designed essentials — crafted with care, built to last, and shipped worldwide.',
   url: 'https://aura-template.example.com',
   locale: 'en',
-  /** A store-wide theme preset. See globals.css: '', 'midnight', 'botanic', 'cobalt'. */
+  /** A store-wide theme preset. See globals.css / THEME_CATALOG:
+   *  '', 'midnight', 'botanic', 'cobalt', 'noir', 'blush', 'sand', 'orchid'. */
   theme: '' as SiteTheme,
+
+  /** Typography pairing: 'editorial' | 'modern' | 'classic' | 'minimal'.
+   *  See FONT_PRESET_CATALOG in settings-schema.ts. */
+  fontPreset: 'editorial' as FontPreset,
 
   /** Light/dark mode: the default before a visitor chooses, and whether the
    *  header shows a toggle. 'system' follows the visitor's OS preference. */
@@ -157,6 +172,65 @@ const defaults: SiteConfig = {
   /** ISO date the promotional countdown counts down to. */
   countdownTo: '2026-08-31T23:59:59',
   countdownLabel: 'Launch offer ends in',
+
+  // ---- Homepage content ---------------------------------------------------
+  // Placeholder copy that reads like a finished store. Replace it in the
+  // Admin Studio's "Homepage" section (or here) — components never hard-code
+  // a headline.
+  hero: {
+    eyebrow: 'The new season edit',
+    heading: 'Considered essentials for a beautiful everyday',
+    subheading:
+      'Thoughtfully designed pieces, crafted to last and made to be lived in. Discover the season’s edit.',
+    primaryCtaLabel: 'Shop new in',
+    primaryCtaHref: '/collections/new-arrivals',
+    secondaryCtaLabel: 'Best sellers',
+    secondaryCtaHref: '/collections/best-sellers',
+  },
+
+  /** Optional founder-story section — toggle with homeSections.story. */
+  story: {
+    eyebrow: 'Our story',
+    title: 'It started with one question: why doesn’t this exist?',
+    text: 'AURA began at a kitchen table, sketching the piece we kept looking for and never found — honest materials, quiet design, a fair price. No trend-chasing, no compromise.\n\nToday we work the same way: small batches, specialist makers, and an obsession with the details you feel rather than see. Every piece still has to answer that first question before it earns a place in the collection.',
+    founderName: 'Elena Marlowe',
+    founderRole: 'Founder & Creative Director',
+    quote: 'We don’t design for seasons. We design for the years after them.',
+    milestones: [
+      { year: '2019', title: 'The first sketch', text: 'One product idea, drawn at a kitchen table and prototyped with a local workshop.' },
+      { year: '2021', title: 'First collection sells out', text: 'Three hundred pieces, gone in nine days — and the first thousand customers.' },
+      { year: '2023', title: 'Going carbon-neutral', text: 'Every shipment offset, packaging fully plastic-free, materials 70% traceable.' },
+      { year: '2026', title: 'A growing family', text: 'Now shipping to 60+ countries, still made in small batches by makers we know by name.' },
+    ],
+  },
+
+  /** The newsletter band at the end of the homepage (homeSections.newsletter). */
+  newsletter: {
+    eyebrow: 'Stay in the loop',
+    heading: 'Get 10% off your first order',
+    text: 'Join our community for early access to new arrivals, private sales and stories from the studio.',
+    buttonLabel: 'Subscribe',
+    successText: 'You’re in! Your code WELCOME10 is on its way.',
+  },
+
+  /** Which homepage sections render. Flip any of these off in the studio —
+   *  the homepage recomposes without leaving a gap. */
+  homeSections: {
+    marquee: true,
+    featuredCollections: true,
+    featuredProducts: true,
+    valueProps: true,
+    promoBanner: true,
+    categoryGrid: true,
+    editorial: true,
+    story: true,
+    testimonials: true,
+    blogPreview: true,
+    instagram: true,
+    faq: true,
+    recentlyViewed: true,
+    newsletter: true,
+  },
 
   // ---- Commerce feature flags ------------------------------------------
   features: {
@@ -230,6 +304,7 @@ export function applyStoreSettings(base: SiteConfig, settings: StoreSettings): S
         url: settings.url,
         locale: settings.locale,
         theme: settings.theme,
+        fontPreset: settings.fontPreset,
         accentColor: settings.accentColor,
         storeMode: settings.storeMode,
         featuredProductSlug: settings.featuredProductSlug,
@@ -250,6 +325,10 @@ export function applyStoreSettings(base: SiteConfig, settings: StoreSettings): S
     ),
     colorMode: { ...base.colorMode, ...settings.colorMode },
     social: { ...base.social, ...settings.social },
+    hero: { ...base.hero, ...settings.hero },
+    story: { ...base.story, ...settings.story },
+    newsletter: { ...base.newsletter, ...settings.newsletter },
+    homeSections: { ...base.homeSections, ...settings.homeSections },
     features: { ...base.features, ...settings.features },
     trust: { ...base.trust, ...settings.trust },
     currencies: pickCurrencies.length ? pickCurrencies : base.currencies,

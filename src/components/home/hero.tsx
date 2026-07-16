@@ -12,32 +12,38 @@ const quickLinks = [
 ];
 
 export function Hero() {
+  // All copy lives in siteConfig.hero — editable in the Admin Studio's
+  // Homepage section (placeholder defaults ship in src/config/site.ts).
+  const hero = siteConfig.hero;
+
   return (
     <section className="container-page pt-6 lg:pt-8">
       <div className="relative grid gap-4 lg:grid-cols-12 lg:gap-5">
         {/* Main visual */}
         <div className="relative col-span-12 flex min-h-[68vh] flex-col justify-end overflow-hidden rounded-[26px] p-7 sm:p-10 lg:col-span-8 lg:min-h-[74vh] lg:p-14">
-          <MediaImage seed="hero-main" alt="AURA seasonal campaign" priority monogram={false} sizes="(max-width: 1024px) 100vw, 66vw" />
+          <MediaImage seed="hero-main" alt={`${siteConfig.name} seasonal campaign`} priority monogram={false} sizes="(max-width: 1024px) 100vw, 66vw" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-black/5" />
 
           <div className="relative max-w-xl text-white">
             <p className="animate-fade-up text-xs font-medium uppercase tracking-eyebrow text-white/85">
-              New season · {new Date().getFullYear()}
+              {hero.eyebrow}
             </p>
             <h1 className="mt-4 animate-fade-up font-serif text-[clamp(2.5rem,6vw,5rem)] font-normal leading-[0.98] tracking-tight text-balance [animation-delay:80ms]">
-              Considered essentials for a beautiful everyday
+              {hero.heading}
             </h1>
             <p className="mt-5 max-w-md animate-fade-up text-[15px] leading-relaxed text-white/85 [animation-delay:160ms]">
-              Thoughtfully designed pieces, crafted to last and made to be lived in. Discover the season’s edit.
+              {hero.subheading}
             </p>
             <div className="mt-8 flex animate-fade-up flex-wrap gap-3 [animation-delay:240ms]">
-              <Link href="/collections/new-arrivals" className="btn bg-white px-8 py-4 text-ink hover:bg-accent hover:text-accent-ink">
-                Shop new in
+              <Link href={hero.primaryCtaHref} className="btn bg-white px-8 py-4 text-ink hover:bg-accent hover:text-accent-ink">
+                {hero.primaryCtaLabel}
                 <ArrowRight size={17} />
               </Link>
-              <Link href="/collections/best-sellers" className="btn border border-white/40 px-8 py-4 text-white backdrop-blur-sm hover:bg-white hover:text-ink">
-                Best sellers
-              </Link>
+              {hero.secondaryCtaLabel && (
+                <Link href={hero.secondaryCtaHref} className="btn border border-white/40 px-8 py-4 text-white backdrop-blur-sm hover:bg-white hover:text-ink">
+                  {hero.secondaryCtaLabel}
+                </Link>
+              )}
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { isSingleProduct } from '@/lib/store-mode';
+import { siteConfig } from '@/config/site';
 import { SingleProductHome } from '@/components/home/single-product-home';
 
 import { Hero } from '@/components/home/hero';
@@ -9,6 +10,7 @@ import { ValueProps } from '@/components/home/value-props';
 import { PromoBanner } from '@/components/home/promo-banner';
 import { CategoryGrid } from '@/components/home/category-grid';
 import { Editorial } from '@/components/home/editorial';
+import { Story } from '@/components/home/story';
 import { Testimonials } from '@/components/home/testimonials';
 import { InstagramGallery } from '@/components/home/instagram';
 import { BlogPreview } from '@/components/home/blog-preview';
@@ -24,22 +26,27 @@ export default function HomePage() {
     return <SingleProductHome />;
   }
 
+  // Each section can be switched off in the Admin Studio (Homepage section);
+  // the page recomposes without gaps. Defaults live in src/config/site.ts.
+  const show = siteConfig.homeSections;
+
   return (
     <>
       <Hero />
-      <Marquee />
-      <FeaturedCollections />
-      <FeaturedProducts />
-      <ValueProps />
-      <PromoBanner />
-      <CategoryGrid />
-      <Editorial />
-      <Testimonials />
-      <BlogPreview />
-      <InstagramGallery />
-      <FaqHome />
-      <RecentlyViewed />
-      <NewsletterBand />
+      {show.marquee && <Marquee />}
+      {show.featuredCollections && <FeaturedCollections />}
+      {show.featuredProducts && <FeaturedProducts />}
+      {show.valueProps && <ValueProps />}
+      {show.promoBanner && <PromoBanner />}
+      {show.categoryGrid && <CategoryGrid />}
+      {show.editorial && <Editorial />}
+      {show.story && <Story />}
+      {show.testimonials && <Testimonials />}
+      {show.blogPreview && <BlogPreview />}
+      {show.instagram && <InstagramGallery />}
+      {show.faq && <FaqHome />}
+      {show.recentlyViewed && <RecentlyViewed />}
+      {show.newsletter && <NewsletterBand />}
     </>
   );
 }

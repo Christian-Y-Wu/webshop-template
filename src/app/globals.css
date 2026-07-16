@@ -91,6 +91,85 @@
   --color-accent-ink: 255 255 255;
 }
 
+[data-theme='noir'] {
+  --color-canvas: 250 250 250;
+  --color-surface: 255 255 255;
+  --color-surface-muted: 241 241 241;
+  --color-ink: 17 17 17;
+  --color-ink-soft: 68 68 68;
+  --color-ink-muted: 128 128 128;
+  --color-line: 226 226 226;
+  --color-accent: 17 17 17;
+  --color-accent-soft: 235 235 235;
+  --color-accent-ink: 255 255 255;
+}
+
+[data-theme='blush'] {
+  --color-canvas: 252 248 247;
+  --color-surface: 255 255 255;
+  --color-surface-muted: 247 238 236;
+  --color-ink: 44 30 30;
+  --color-ink-soft: 94 74 72;
+  --color-ink-muted: 152 124 121;
+  --color-line: 236 222 219;
+  --color-accent: 188 91 96;
+  --color-accent-soft: 246 226 228;
+  --color-accent-ink: 255 255 255;
+}
+
+[data-theme='sand'] {
+  --color-canvas: 249 246 240;
+  --color-surface: 255 254 250;
+  --color-surface-muted: 240 234 223;
+  --color-ink: 43 37 28;
+  --color-ink-soft: 96 86 70;
+  --color-ink-muted: 145 133 112;
+  --color-line: 228 219 202;
+  --color-accent: 158 122 74;
+  --color-accent-soft: 238 227 209;
+  --color-accent-ink: 255 255 255;
+}
+
+[data-theme='orchid'] {
+  --color-canvas: 250 248 252;
+  --color-surface: 255 255 255;
+  --color-surface-muted: 242 238 248;
+  --color-ink: 32 26 41;
+  --color-ink-soft: 82 72 100;
+  --color-ink-muted: 132 122 150;
+  --color-line: 228 222 238;
+  --color-accent: 122 63 172;
+  --color-accent-soft: 235 224 246;
+  --color-accent-ink: 255 255 255;
+}
+
+/* --- Typography presets (set data-font on <html>) --------------------------
+   Four pairings, all loaded via next/font in layout.tsx. The default
+   ('editorial': Fraunces + Inter) needs no attribute — presets below remap
+   the heading stack, so every component keeps using var(--font-serif). */
+
+[data-font='modern'] {
+  --font-serif: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+}
+[data-font='modern'] h1, [data-font='modern'] h2,
+[data-font='modern'] h3, [data-font='modern'] h4 {
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+[data-font='classic'] {
+  --font-serif: var(--font-playfair), ui-serif, Georgia, serif;
+}
+
+[data-font='minimal'] {
+  --font-serif: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+[data-font='minimal'] h1, [data-font='minimal'] h2,
+[data-font='minimal'] h3, [data-font='minimal'] h4 {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
 /* --- Visitor-facing dark mode ----------------------------------------------
    Toggled by stamping data-mode="dark" on <html> (see ThemeToggle and the
    no-flash script in src/lib/theme.ts). Declared after the brand presets so
@@ -108,6 +187,13 @@
   --color-line: 50 53 62;
   --color-accent-soft: 63 44 44;
   --color-highlight: 196 167 92;
+}
+
+/* Noir's black accent would disappear on a dark canvas — flip it to white. */
+[data-mode='dark'][data-theme='noir'] {
+  --color-accent: 245 245 245;
+  --color-accent-soft: 55 55 58;
+  --color-accent-ink: 17 17 17;
 }
 
 [data-mode='dark'] .skeleton::after {

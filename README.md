@@ -47,6 +47,9 @@ outgrow the template; you just add products and change one line.
 ## ✨ Highlights
 
 - **Admin Studio** — a secure `/admin` cockpit: one big settings form, a product manager and a self-updating launch checklist. Configure the whole store without touching code.
+- **Design system with real range** — 8 theme presets × 4 typography pairings × any accent colour, all switchable in the studio. Hundreds of distinct looks from the same components.
+- **Homepage composer** — every homepage section (story, testimonials, Instagram, journal, newsletter…) toggles on/off in the admin, and the hero, founder-story and newsletter copy are all editable there too. No layout surgery.
+- **Optional founder story & history** — a beautiful, ready-made section with founder portrait, pull quote and company timeline. Fill in your own story or ship the elegant placeholder until you have one.
 - **Light & dark mode** — flash-free, system-aware, persisted per visitor; the store picks the default and can hide the toggle.
 - **Fully designed pages** — homepage, product, collection, cart, checkout, search, account, blog, policies, contact, 404.
 - **Working account flow** — register/sign-in/sign-out demo with a personalised dashboard (clearly labeled, per-browser, no passwords stored) and a one-file seam to plug in Auth.js/Clerk/Shopify accounts.
@@ -99,7 +102,7 @@ store is configured — no code, no hunting through files.
 
 | Page | Covers |
 | --- | --- |
-| **Store settings** | Brand & identity, contact, store mode + featured product, theme/accent/dark-mode, announcements & countdown, all 11 feature flags, discount codes, currencies & languages, social links, trust numbers, payment badges, SEO/domain, demo-catalogue visibility — one Save button. |
+| **Store settings** | Brand & identity, contact, store mode + featured product, design (8 themes × 4 font pairings × accent, dark-mode), announcements & countdown, homepage composer (14 section toggles + hero copy), founder story & timeline editor, newsletter copy, all 11 feature flags, discount codes, currencies & languages, social links, trust numbers, payment badges, SEO/domain, demo-catalogue visibility — one Save button. |
 | **Products** | Add, edit, duplicate and delete products (title, price, images, colours, sizes, collections, stock, flags). Demo products can be duplicated as starting points. |
 | **Launch checklist** | Live launch progress — most items tick themselves as the config changes. |
 
@@ -162,7 +165,7 @@ writes can also be edited by hand — it's all data, no component surgery:
 | Reviews / testimonials / blog / FAQ / policy pages | [`src/lib/data/`](src/lib/data) |
 | UI translations (5 languages ship complete) | [`src/lib/i18n/dictionaries.ts`](src/lib/i18n/dictionaries.ts) |
 
-### Change the colour scheme
+### Change the design
 
 The whole theme is driven by CSS custom properties in [`globals.css`](src/app/globals.css). To restyle, edit the accent trio:
 
@@ -174,16 +177,39 @@ The whole theme is driven by CSS custom properties in [`globals.css`](src/app/gl
 }
 ```
 
-Four ready-made presets ship in the same file — pick one in the studio's
-Design section (or set `theme` in `site.ts`):
+**Eight ready-made theme presets** ship in the same file — pick one from the
+visual swatch picker in the studio's Design section (or set `theme` in `site.ts`):
 
 ```ts
-theme: 'midnight' // '' | 'midnight' | 'botanic' | 'cobalt'
+theme: 'midnight'
+// '' (ivory) | 'midnight' | 'botanic' | 'cobalt' | 'noir' | 'blush' | 'sand' | 'orchid'
 ```
+
+**Four typography pairings** switch the whole store's type in one click
+(`fontPreset` in `site.ts`, or the Design section):
+
+```ts
+fontPreset: 'editorial'
+// 'editorial' (Fraunces serif) | 'modern' (Space Grotesk) | 'classic' (Playfair) | 'minimal' (all Inter)
+```
+
+Any theme × any font pairing × any accent colour — hundreds of distinct
+storefronts from the same components, no CSS required.
 
 Visitors also get a **light/dark toggle** in the header (flash-free,
 system-aware, persisted). The store chooses the default mode — and whether
 the toggle shows at all — in the studio's Design section.
+
+### Compose the homepage
+
+Every homepage section is optional. In the studio's **Homepage** section,
+toggle any of the 14 sections (featured collections, value props, founder
+story, testimonials, journal, Instagram, FAQ, newsletter…) and the page
+recomposes without gaps — in both store modes. The same panel edits the hero
+headline & CTAs, the **founder story** (portrait quote, origin story, milestone
+timeline) and the newsletter band's copy. Defaults live in
+[`src/config/site.ts`](src/config/site.ts) as polished placeholder content, so
+the store looks finished before you've written a word.
 
 ### Use real product photos
 
@@ -282,7 +308,7 @@ npm test          # Vitest + React Testing Library smoke tests
 ## 🛠 Tech
 
 Next.js 14 · React 18 · TypeScript · Tailwind CSS 3 · Framer Motion · lucide-react ·
-Embla Carousel · Fuse.js (search) · Stripe · Inter + Fraunces (`next/font`) ·
+Embla Carousel · Fuse.js (search) · Stripe · Inter + Fraunces + Space Grotesk + Playfair (`next/font`) ·
 Vitest + React Testing Library · `tsx` + `prompts` (setup/validation scripts).
 
 ---

@@ -4,12 +4,20 @@ import { useMemo, useState } from 'react';
 import { Check, Loader2, Plus, Trash2 } from 'lucide-react';
 import {
   CURRENCY_CATALOG,
+  FONT_PRESET_CATALOG,
+  HOME_SECTION_CATALOG,
   LANGUAGE_CATALOG,
   PAYMENT_METHODS,
+  THEME_CATALOG,
   type ColorModeDefault,
+  type FontPreset,
+  type HeroContent,
+  type HomeSections,
+  type NewsletterContent,
   type SiteTheme,
   type StoreMode,
   type StoreSettings,
+  type StoryContent,
 } from '@/config/settings-schema';
 import type { AnnouncementItem, DiscountCode } from '@/config/site';
 import { useUI } from '@/components/providers/ui-provider';
@@ -53,9 +61,13 @@ const PAYMENT_LABELS: Record<string, string> = {
 };
 
 /** Build the full, explicit settings object the form edits. */
-function fromConfig(c: AdminConfig): Required<Omit<StoreSettings, 'colorMode' | 'accentColor'>> & {
+function fromConfig(c: AdminConfig): Required<Omit<StoreSettings, 'colorMode' | 'accentColor' | 'hero' | 'story' | 'newsletter' | 'homeSections'>> & {
   colorMode: { default: ColorModeDefault; showToggle: boolean };
   accentColor: string | null;
+  hero: HeroContent;
+  story: StoryContent;
+  newsletter: NewsletterContent;
+  homeSections: HomeSections;
 } {
   const e = c.effective;
   return {
@@ -66,6 +78,7 @@ function fromConfig(c: AdminConfig): Required<Omit<StoreSettings, 'colorMode' | 
     url: e.url,
     locale: e.locale,
     theme: e.theme,
+    fontPreset: e.fontPreset,
     colorMode: { ...e.colorMode },
     accentColor: e.accentColor,
     storeMode: e.storeMode,
@@ -77,6 +90,10 @@ function fromConfig(c: AdminConfig): Required<Omit<StoreSettings, 'colorMode' | 
     announcements: e.announcements.map((a) => ({ ...a })),
     countdownTo: e.countdownTo,
     countdownLabel: e.countdownLabel,
+    hero: { ...e.hero },
+    story: { ...e.story, milestones: e.story.milestones.map((m) => ({ ...m })) },
+    newsletter: { ...e.newsletter },
+    homeSections: { ...e.homeSections },
     features: { ...e.features },
     freeShippingThreshold: e.freeShippingThreshold,
     giftWrapPrice: e.giftWrapPrice,
@@ -203,18 +220,42 @@ export function SettingsForm({
       </Section>
 
       {/* Design */}
-      <Section id="design" title="Design" description="Theme, brand colour and light/dark behaviour. One hex value restyles buttons, badges, links and highlights across the whole store.">
+      <Section id="design" title="Design" description="Theme, typography, brand colour and light/dark behaviour — a whole re-skin without touching code. Combine any theme, font pairing and accent for hundreds of distinct looks.">
+        <Field label="Theme preset" hint="Each preset restyles the canvas, surfaces, text and accent across the whole store.">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {THEME_CATALOG.map((t) => (
+              <button
+                key={t.value}
+                type="button"
+                onClick={() => set('theme', t.value as SiteTheme)}
+                className={`rounded-card border p-3 text-left transition-colors ${
+                  s.theme === t.value ? 'border-ink' : 'border-line hover:border-ink/40'
+                }`}
+              >
+                <span className="flex items-center gap-1.5">
+                  {t.swatch.map((color, i) => (
+                    <span
+                      key={i}
+                      className="h-5 w-5 rounded-full border border-black/10"
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </span>
+                <span className="mt-2 flex items-center justify-between text-sm font-medium text-ink">
+                  {t.label}
+                  {s.theme === t.value && <Check size={14} className="text-accent" />}
+                </span>
+                <span className="mt-0.5 block text-[11px] leading-snug text-ink-muted">{t.description}</span>
+              </button>
+            ))}
+          </div>
+        </Field>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Theme preset">
+          <Field label="Font pairing" hint={FONT_PRESET_CATALOG.find((f) => f.value === s.fontPreset)?.description}>
             <Select
-              value={s.theme}
-              onChange={(e) => set('theme', e.target.value as SiteTheme)}
-              options={[
-                { value: '', label: 'Ivory (default, light)' },
-                { value: 'midnight', label: 'Midnight (dark)' },
-                { value: 'botanic', label: 'Botanic (green, light)' },
-                { value: 'cobalt', label: 'Cobalt (blue, light)' },
-              ]}
+              value={s.fontPreset}
+              onChange={(e) => set('fontPreset', e.target.value as FontPreset)}
+              options={FONT_PRESET_CATALOG.map((f) => ({ value: f.value, label: f.label }))}
             />
           </Field>
           <Field label="Accent colour" hint="Leave unset to keep the preset's accent.">
@@ -314,6 +355,154 @@ export function SettingsForm({
           </Field>
           <Field label="Countdown label">
             <TextInput value={s.countdownLabel} onChange={(e) => set('countdownLabel', e.target.value)} />
+          </Field>
+        </div>
+      </Section>
+
+      {/* Homepage composer */}
+      <Section id="homepage" title="Homepage" description="Compose the homepage: switch sections on or off and edit the hero copy. The page recomposes without gaps — no code, no layout surgery.">
+        <Field label="Sections" hint={`Sections marked “catalogue” only appear in catalogue mode; the rest apply to both modes. Current mode: ${s.storeMode === 'single' ? 'single product' : 'catalogue'}.`}>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {HOME_SECTION_CATALOG.map((section) => (
+              <Toggle
+                key={section.key}
+                checked={s.homeSections[section.key] ?? false}
+                onChange={(v) => set('homeSections', { ...s.homeSections, [section.key]: v })}
+                label={section.modes.includes('single') ? section.label : `${section.label} (catalogue)`}
+                description={section.description}
+              />
+            ))}
+          </div>
+        </Field>
+        <div className="border-t border-line pt-4">
+          <p className="mb-3 text-sm font-medium text-ink">Hero (catalogue mode)</p>
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Eyebrow" hint="Small uppercase line above the headline.">
+                <TextInput value={s.hero.eyebrow} onChange={(e) => set('hero', { ...s.hero, eyebrow: e.target.value })} />
+              </Field>
+              <Field label="Headline">
+                <TextInput value={s.hero.heading} onChange={(e) => set('hero', { ...s.hero, heading: e.target.value })} />
+              </Field>
+            </div>
+            <Field label="Subheading">
+              <TextArea rows={2} value={s.hero.subheading} onChange={(e) => set('hero', { ...s.hero, subheading: e.target.value })} />
+            </Field>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Primary button label">
+                <TextInput value={s.hero.primaryCtaLabel} onChange={(e) => set('hero', { ...s.hero, primaryCtaLabel: e.target.value })} />
+              </Field>
+              <Field label="Primary button link">
+                <TextInput value={s.hero.primaryCtaHref} onChange={(e) => set('hero', { ...s.hero, primaryCtaHref: e.target.value })} />
+              </Field>
+              <Field label="Secondary button label" hint="Leave empty to show only one button.">
+                <TextInput value={s.hero.secondaryCtaLabel} onChange={(e) => set('hero', { ...s.hero, secondaryCtaLabel: e.target.value })} />
+              </Field>
+              <Field label="Secondary button link">
+                <TextInput value={s.hero.secondaryCtaHref} onChange={(e) => set('hero', { ...s.hero, secondaryCtaHref: e.target.value })} />
+              </Field>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* Founder story */}
+      <Section id="story" title="Founder story & history" description="An optional homepage section with your founder, origin story and company timeline. Enable it under Homepage → Sections; edit every word here.">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Eyebrow">
+            <TextInput value={s.story.eyebrow} onChange={(e) => set('story', { ...s.story, eyebrow: e.target.value })} />
+          </Field>
+          <Field label="Title">
+            <TextInput value={s.story.title} onChange={(e) => set('story', { ...s.story, title: e.target.value })} />
+          </Field>
+        </div>
+        <Field label="Story" hint="Blank lines split the text into paragraphs.">
+          <TextArea rows={5} value={s.story.text} onChange={(e) => set('story', { ...s.story, text: e.target.value })} />
+        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Founder name">
+            <TextInput value={s.story.founderName} onChange={(e) => set('story', { ...s.story, founderName: e.target.value })} />
+          </Field>
+          <Field label="Founder role">
+            <TextInput value={s.story.founderRole} onChange={(e) => set('story', { ...s.story, founderRole: e.target.value })} />
+          </Field>
+        </div>
+        <Field label="Pull quote" hint="Shown over the founder portrait — skip the quotation marks, they’re added automatically.">
+          <TextInput value={s.story.quote} onChange={(e) => set('story', { ...s.story, quote: e.target.value })} />
+        </Field>
+        <Field label="Timeline milestones">
+          <div className="space-y-2">
+            {s.story.milestones.map((m, i) => (
+              <div key={i} className="grid grid-cols-[80px_1fr_auto] items-start gap-2">
+                <TextInput
+                  value={m.year}
+                  placeholder="Year"
+                  onChange={(e) => {
+                    const next = s.story.milestones.map((x) => ({ ...x }));
+                    next[i].year = e.target.value;
+                    set('story', { ...s.story, milestones: next });
+                  }}
+                />
+                <div className="space-y-2">
+                  <TextInput
+                    value={m.title}
+                    placeholder="Milestone title"
+                    onChange={(e) => {
+                      const next = s.story.milestones.map((x) => ({ ...x }));
+                      next[i].title = e.target.value;
+                      set('story', { ...s.story, milestones: next });
+                    }}
+                  />
+                  <TextInput
+                    value={m.text}
+                    placeholder="One-line description"
+                    onChange={(e) => {
+                      const next = s.story.milestones.map((x) => ({ ...x }));
+                      next[i].text = e.target.value;
+                      set('story', { ...s.story, milestones: next });
+                    }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  aria-label="Remove milestone"
+                  className="btn-ghost shrink-0 px-2.5 text-ink-muted hover:text-sale"
+                  onClick={() => set('story', { ...s.story, milestones: s.story.milestones.filter((_, j) => j !== i) })}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              className="btn-ghost text-sm"
+              onClick={() => set('story', { ...s.story, milestones: [...s.story.milestones, { year: '', title: '', text: '' }] })}
+            >
+              <Plus size={15} /> Add milestone
+            </button>
+          </div>
+        </Field>
+      </Section>
+
+      {/* Newsletter band */}
+      <Section id="newsletter" title="Newsletter band" description="The email sign-up at the end of the homepage. Toggle it under Homepage → Sections; the popup version is a separate switch under Features.">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Eyebrow">
+            <TextInput value={s.newsletter.eyebrow} onChange={(e) => set('newsletter', { ...s.newsletter, eyebrow: e.target.value })} />
+          </Field>
+          <Field label="Heading">
+            <TextInput value={s.newsletter.heading} onChange={(e) => set('newsletter', { ...s.newsletter, heading: e.target.value })} />
+          </Field>
+        </div>
+        <Field label="Text">
+          <TextArea rows={2} value={s.newsletter.text} onChange={(e) => set('newsletter', { ...s.newsletter, text: e.target.value })} />
+        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Button label">
+            <TextInput value={s.newsletter.buttonLabel} onChange={(e) => set('newsletter', { ...s.newsletter, buttonLabel: e.target.value })} />
+          </Field>
+          <Field label="Success message" hint="Mention the welcome code if you keep one in Discount codes.">
+            <TextInput value={s.newsletter.successText} onChange={(e) => set('newsletter', { ...s.newsletter, successText: e.target.value })} />
           </Field>
         </div>
       </Section>

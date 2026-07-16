@@ -22,7 +22,16 @@ import type {
   LanguageConfig,
 } from './site';
 
-export type SiteTheme = '' | 'midnight' | 'botanic' | 'cobalt';
+export type SiteTheme =
+  | ''
+  | 'midnight'
+  | 'botanic'
+  | 'cobalt'
+  | 'noir'
+  | 'blush'
+  | 'sand'
+  | 'orchid';
+export type FontPreset = 'editorial' | 'modern' | 'classic' | 'minimal';
 export type StoreMode = 'single' | 'catalog';
 export type ColorModeDefault = 'light' | 'dark' | 'system';
 
@@ -61,6 +70,70 @@ export interface TrustConfig {
   guaranteeDays: number;
 }
 
+/* ---- Editable homepage content --------------------------------------------
+   Every headline the visitor reads on the homepage is data, not JSX — the
+   defaults in site.ts are polished placeholder copy, and the Admin Studio's
+   "Homepage" sections overwrite them without touching a component. */
+
+export interface HeroContent {
+  /** Small uppercase line above the headline. */
+  eyebrow: string;
+  heading: string;
+  subheading: string;
+  primaryCtaLabel: string;
+  primaryCtaHref: string;
+  secondaryCtaLabel: string;
+  secondaryCtaHref: string;
+}
+
+export interface StoryMilestone {
+  year: string;
+  title: string;
+  text: string;
+}
+
+/** The optional founder-story + history section (toggled in homeSections). */
+export interface StoryContent {
+  eyebrow: string;
+  title: string;
+  /** Story copy. Blank lines split it into paragraphs. */
+  text: string;
+  founderName: string;
+  founderRole: string;
+  quote: string;
+  milestones: StoryMilestone[];
+}
+
+export interface NewsletterContent {
+  eyebrow: string;
+  heading: string;
+  text: string;
+  buttonLabel: string;
+  successText: string;
+}
+
+/**
+ * The homepage is composed of independent sections that can each be switched
+ * off in the Admin Studio. Keys map 1:1 to components in src/components/home.
+ */
+export type HomeSectionKey =
+  | 'marquee'
+  | 'featuredCollections'
+  | 'featuredProducts'
+  | 'valueProps'
+  | 'promoBanner'
+  | 'categoryGrid'
+  | 'editorial'
+  | 'story'
+  | 'testimonials'
+  | 'blogPreview'
+  | 'instagram'
+  | 'faq'
+  | 'recentlyViewed'
+  | 'newsletter';
+
+export type HomeSections = Record<HomeSectionKey, boolean>;
+
 /**
  * The overrides file (`store-settings.json`). Every field is optional —
  * anything omitted falls back to the defaults in `site.ts`. Currencies and
@@ -75,6 +148,7 @@ export interface StoreSettings {
   url?: string;
   locale?: string;
   theme?: SiteTheme;
+  fontPreset?: FontPreset;
   colorMode?: Partial<ColorModeConfig>;
   /** Accent brand colour as hex (e.g. "#b2583f"). Soft/ink shades are derived. */
   accentColor?: string | null;
@@ -87,6 +161,10 @@ export interface StoreSettings {
   announcements?: AnnouncementItem[];
   countdownTo?: string;
   countdownLabel?: string;
+  hero?: Partial<HeroContent>;
+  story?: Partial<StoryContent>;
+  newsletter?: Partial<NewsletterContent>;
+  homeSections?: Partial<HomeSections>;
   features?: Partial<FeatureFlags>;
   freeShippingThreshold?: number;
   giftWrapPrice?: number;
@@ -104,6 +182,58 @@ export interface StoreSettings {
 }
 
 /* ---- Catalogs ------------------------------------------------------------ */
+
+/** Theme presets (CSS lives in globals.css). Swatches power the admin picker. */
+export const THEME_CATALOG: {
+  value: SiteTheme;
+  label: string;
+  description: string;
+  /** [canvas, accent, ink] as CSS colors — for the admin swatch preview. */
+  swatch: [string, string, string];
+}[] = [
+  { value: '', label: 'Ivory', description: 'Warm gallery white, clay accent', swatch: ['#faf8f5', '#b2583f', '#1a1816'] },
+  { value: 'midnight', label: 'Midnight', description: 'Deep charcoal, brushed gold', swatch: ['#111216', '#c6a86c', '#f0f0f5'] },
+  { value: 'botanic', label: 'Botanic', description: 'Fresh sage, forest green', swatch: ['#f7f8f4', '#47684a', '#1b211b'] },
+  { value: 'cobalt', label: 'Cobalt', description: 'Cool white, electric blue', swatch: ['#f9fafc', '#284ebd', '#141821'] },
+  { value: 'noir', label: 'Noir', description: 'Stark monochrome, pure black', swatch: ['#fafafa', '#111111', '#111111'] },
+  { value: 'blush', label: 'Blush', description: 'Soft rose, warm rosewood', swatch: ['#fcf8f7', '#bc5b60', '#2c1e1e'] },
+  { value: 'sand', label: 'Sand', description: 'Desert neutrals, aged bronze', swatch: ['#f9f6f0', '#9e7a4a', '#2b251c'] },
+  { value: 'orchid', label: 'Orchid', description: 'Cool lilac, deep violet', swatch: ['#faf8fc', '#7a3fac', '#201a29'] },
+];
+
+/** Typography pairings (fonts are loaded in layout.tsx, mapped in globals.css). */
+export const FONT_PRESET_CATALOG: { value: FontPreset; label: string; description: string }[] = [
+  { value: 'editorial', label: 'Editorial', description: 'Fraunces serif headlines + Inter — refined, magazine-like (default)' },
+  { value: 'modern', label: 'Modern', description: 'Space Grotesk headlines + Inter — geometric, tech-forward' },
+  { value: 'classic', label: 'Classic', description: 'Playfair Display headlines + Inter — timeless, high-fashion' },
+  { value: 'minimal', label: 'Minimal', description: 'Inter everywhere — quiet, Scandinavian, type-neutral' },
+];
+
+/**
+ * Homepage sections the store can switch on/off. `modes` says where the
+ * section appears; the composer in the Admin Studio groups by this.
+ */
+export const HOME_SECTION_CATALOG: {
+  key: HomeSectionKey;
+  label: string;
+  description: string;
+  modes: StoreMode[];
+}[] = [
+  { key: 'marquee', label: 'Scrolling marquee', description: 'USP ticker under the hero', modes: ['single', 'catalog'] },
+  { key: 'featuredCollections', label: 'Featured collections', description: 'Large collection cards', modes: ['catalog'] },
+  { key: 'featuredProducts', label: 'Featured products', description: 'Best-seller product rail', modes: ['catalog'] },
+  { key: 'valueProps', label: 'Value props', description: 'Shipping / returns / guarantee icons', modes: ['single', 'catalog'] },
+  { key: 'promoBanner', label: 'Promo banner', description: 'Full-width offer with countdown', modes: ['catalog'] },
+  { key: 'categoryGrid', label: 'Category grid', description: 'Shop-by-category tiles', modes: ['catalog'] },
+  { key: 'editorial', label: 'Philosophy', description: 'Brand philosophy split section', modes: ['single', 'catalog'] },
+  { key: 'story', label: 'Founder story & history', description: 'Founder portrait, quote and company timeline', modes: ['single', 'catalog'] },
+  { key: 'testimonials', label: 'Testimonials', description: 'Customer quote cards', modes: ['single', 'catalog'] },
+  { key: 'blogPreview', label: 'Journal preview', description: 'Latest blog posts', modes: ['catalog'] },
+  { key: 'instagram', label: 'Instagram gallery', description: 'Social feed grid', modes: ['catalog'] },
+  { key: 'faq', label: 'FAQ', description: 'Common questions accordion', modes: ['single', 'catalog'] },
+  { key: 'recentlyViewed', label: 'Recently viewed', description: 'The visitor’s browsing trail', modes: ['catalog'] },
+  { key: 'newsletter', label: 'Newsletter band', description: 'Email sign-up with welcome offer', modes: ['single', 'catalog'] },
+];
 
 export const CURRENCY_CATALOG: CurrencyConfig[] = [
   { code: 'USD', symbol: '$', label: 'US Dollar', rate: 1, locale: 'en-US', flag: '🇺🇸' },
@@ -139,9 +269,17 @@ export const PAYMENT_METHODS = [
 
 /* ---- Validation (used by the admin save API) ------------------------------ */
 
-const THEMES: SiteTheme[] = ['', 'midnight', 'botanic', 'cobalt'];
+const THEMES: SiteTheme[] = THEME_CATALOG.map((t) => t.value);
+const FONT_PRESETS: FontPreset[] = FONT_PRESET_CATALOG.map((f) => f.value);
 const MODES: StoreMode[] = ['single', 'catalog'];
 const COLOR_MODES: ColorModeDefault[] = ['light', 'dark', 'system'];
+const HOME_SECTION_KEYS = new Set<string>(HOME_SECTION_CATALOG.map((s) => s.key));
+const HERO_KEYS = new Set([
+  'eyebrow', 'heading', 'subheading',
+  'primaryCtaLabel', 'primaryCtaHref', 'secondaryCtaLabel', 'secondaryCtaHref',
+]);
+const STORY_KEYS = new Set(['eyebrow', 'title', 'text', 'founderName', 'founderRole', 'quote', 'milestones']);
+const NEWSLETTER_KEYS = new Set(['eyebrow', 'heading', 'text', 'buttonLabel', 'successText']);
 
 function isString(v: unknown): v is string {
   return typeof v === 'string';
@@ -170,7 +308,8 @@ export function validateSettings(input: unknown): string[] {
   const numberFields = ['freeShippingThreshold', 'giftWrapPrice'];
   const knownKeys = new Set([
     ...stringFields, ...numberFields,
-    'theme', 'colorMode', 'accentColor', 'storeMode', 'social', 'announcements',
+    'theme', 'fontPreset', 'colorMode', 'accentColor', 'storeMode', 'social', 'announcements',
+    'hero', 'story', 'newsletter', 'homeSections',
     'features', 'discountCodes', 'currencyCodes', 'languageCodes', 'trust',
     'payments', 'hideDemoCatalog',
   ]);
@@ -188,6 +327,9 @@ export function validateSettings(input: unknown): string[] {
 
   if (s.theme !== undefined && !THEMES.includes(s.theme as SiteTheme)) {
     errors.push(`"theme" must be one of: ${THEMES.map((t) => t || '(default)').join(', ')}.`);
+  }
+  if (s.fontPreset !== undefined && !FONT_PRESETS.includes(s.fontPreset as FontPreset)) {
+    errors.push(`"fontPreset" must be one of: ${FONT_PRESETS.join(', ')}.`);
   }
   if (s.storeMode !== undefined && !MODES.includes(s.storeMode as StoreMode)) {
     errors.push('"storeMode" must be "single" or "catalog".');
@@ -263,6 +405,57 @@ export function validateSettings(input: unknown): string[] {
     else {
       for (const [k, v] of Object.entries(social)) {
         if (v !== undefined && !isString(v)) errors.push(`social.${k} must be a string URL.`);
+      }
+    }
+  }
+  for (const [groupKey, allowed] of [
+    ['hero', HERO_KEYS],
+    ['newsletter', NEWSLETTER_KEYS],
+  ] as const) {
+    const group = s[groupKey];
+    if (group === undefined) continue;
+    if (typeof group !== 'object' || group === null || Array.isArray(group)) {
+      errors.push(`"${groupKey}" must be an object.`);
+      continue;
+    }
+    for (const [k, v] of Object.entries(group)) {
+      if (!allowed.has(k)) errors.push(`Unknown ${groupKey} field "${k}".`);
+      else if (!isString(v)) errors.push(`${groupKey}.${k} must be a string.`);
+      else if (v.length > 2000) errors.push(`${groupKey}.${k} is too long.`);
+    }
+  }
+  if (s.story !== undefined) {
+    const story = s.story as Record<string, unknown>;
+    if (typeof story !== 'object' || story === null || Array.isArray(story)) {
+      errors.push('"story" must be an object.');
+    } else {
+      for (const [k, v] of Object.entries(story)) {
+        if (!STORY_KEYS.has(k)) errors.push(`Unknown story field "${k}".`);
+        else if (k !== 'milestones' && !isString(v)) errors.push(`story.${k} must be a string.`);
+        else if (isString(v) && v.length > 5000) errors.push(`story.${k} is too long.`);
+      }
+      if (story.milestones !== undefined) {
+        if (!Array.isArray(story.milestones)) errors.push('"story.milestones" must be an array.');
+        else {
+          for (const m of story.milestones as unknown[]) {
+            const item = m as Record<string, unknown>;
+            if (!item || !isString(item.year) || !isString(item.title) || !isString(item.text)) {
+              errors.push('Each story milestone needs "year", "title" and "text" strings.');
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+  if (s.homeSections !== undefined) {
+    const sections = s.homeSections as Record<string, unknown>;
+    if (typeof sections !== 'object' || sections === null || Array.isArray(sections)) {
+      errors.push('"homeSections" must be an object.');
+    } else {
+      for (const [k, v] of Object.entries(sections)) {
+        if (!HOME_SECTION_KEYS.has(k)) errors.push(`Unknown homepage section "${k}".`);
+        else if (typeof v !== 'boolean') errors.push(`homeSections.${k} must be true or false.`);
       }
     }
   }

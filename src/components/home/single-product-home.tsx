@@ -22,6 +22,7 @@ import { compactNumber } from '@/lib/utils';
 import { Marquee } from '@/components/home/marquee';
 import { ValueProps } from '@/components/home/value-props';
 import { Editorial } from '@/components/home/editorial';
+import { Story } from '@/components/home/story';
 import { Testimonials } from '@/components/home/testimonials';
 import { FaqHome } from '@/components/home/faq-home';
 import { NewsletterBand } from '@/components/home/newsletter-band';
@@ -35,6 +36,10 @@ import { StarRating } from '@/components/ui/star-rating';
 
 export function SingleProductHome() {
   const product = getFeaturedProduct();
+  // Optional sections share the same homeSections toggles as the catalog
+  // homepage (Admin Studio → Homepage) — only the keys relevant to a
+  // single-product landing page are used here.
+  const show = siteConfig.homeSections;
 
   return (
     <>
@@ -59,13 +64,16 @@ export function SingleProductHome() {
         </div>
       </section>
 
-      <Marquee />
+      {show.marquee && <Marquee />}
 
       {/* Why buy */}
-      <ValueProps />
+      {show.valueProps && <ValueProps />}
 
-      {/* Brand story */}
-      <Editorial />
+      {/* Brand philosophy */}
+      {show.editorial && <Editorial />}
+
+      {/* Founder story & history */}
+      {show.story && <Story />}
 
       {/* Everything about the product */}
       <section id="details" className="container-page mt-20 scroll-mt-24 lg:mt-28">
@@ -73,7 +81,7 @@ export function SingleProductHome() {
       </section>
 
       {/* Social proof */}
-      <Testimonials />
+      {show.testimonials && <Testimonials />}
 
       {/* Reviews (component already renders id="reviews") */}
       <div className="container-page mt-20 border-t border-line pt-14 lg:mt-28">
@@ -81,11 +89,13 @@ export function SingleProductHome() {
       </div>
 
       {/* FAQ */}
-      <div id="faq" className="scroll-mt-24">
-        <FaqHome />
-      </div>
+      {show.faq && (
+        <div id="faq" className="scroll-mt-24">
+          <FaqHome />
+        </div>
+      )}
 
-      <NewsletterBand />
+      {show.newsletter && <NewsletterBand />}
 
       {/* Persistent add-to-cart on scroll */}
       <StickyAddBar product={product} />

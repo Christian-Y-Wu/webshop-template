@@ -16,6 +16,7 @@ import { randomBytes } from 'node:crypto';
 import { join } from 'node:path';
 import prompts from 'prompts';
 import { slugify } from '../src/lib/utils';
+import { THEME_CATALOG } from '../src/config/settings-schema';
 
 const root = join(__dirname, '..');
 const sitePath = join(root, 'src/config/site.ts');
@@ -64,12 +65,10 @@ async function main() {
         type: 'select',
         name: 'theme',
         message: 'Base theme preset',
-        choices: [
-          { title: 'Light (default)', value: '' },
-          { title: 'Midnight (dark)', value: 'midnight' },
-          { title: 'Botanic (green, light)', value: 'botanic' },
-          { title: 'Cobalt (blue, light)', value: 'cobalt' },
-        ],
+        choices: THEME_CATALOG.map((t) => ({
+          title: `${t.label}${t.value === '' ? ' (default)' : ''} — ${t.description}`,
+          value: t.value,
+        })),
       },
       {
         type: 'select',
