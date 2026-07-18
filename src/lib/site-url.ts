@@ -35,7 +35,7 @@ export function normalizeUrl(raw: string): string {
  * Resolve the canonical base URL from an environment map. Pure and injectable
  * so the precedence rules can be unit-tested without touching `process.env`.
  */
-export function resolveSiteUrl(env: NodeJS.ProcessEnv = process.env): string {
+export function resolveSiteUrl(env: Record<string, string | undefined> = process.env): string {
   const raw =
     env.NEXT_PUBLIC_SITE_URL ||
     env.VERCEL_PROJECT_PRODUCTION_URL ||
