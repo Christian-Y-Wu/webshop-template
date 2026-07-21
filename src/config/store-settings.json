@@ -1,1 +1,43 @@
-{}
+{
+  "homeSections": {
+    "marquee": true,
+    "featuredCollections": true,
+    "featuredProducts": true,
+    "valueProps": true,
+    "promoBanner": false,
+    "categoryGrid": true,
+    "editorial": true,
+    "story": false,
+    "testimonials": false,
+    "blogPreview": false,
+    "instagram": false,
+    "faq": true,
+    "recentlyViewed": false,
+    "newsletter": true
+  },
+  "features": {
+    "wishlist": false,
+    "compare": false,
+    "quickAdd": true,
+    "reviews": false,
+    "giftWrap": false,
+    "freeShippingBar": true,
+    "newsletterPopup": false,
+    "recentlyPurchasedPopup": false,
+    "liveChat": false,
+    "infiniteScroll": true
+  },
+  "trust": {
+    "ratingCount": 0
+  },
+  "announcements": [
+    {
+      "text": "Complimentary shipping on orders over $75 — worldwide",
+      "href": "/pages/shipping"
+    },
+    {
+      "text": "30-day easy returns · Free & carbon-neutral",
+      "href": "/pages/returns"
+    }
+  ]
+}

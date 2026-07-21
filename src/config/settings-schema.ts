@@ -58,7 +58,6 @@ export interface FeatureFlags {
   giftWrap: boolean;
   freeShippingBar: boolean;
   newsletterPopup: boolean;
-  exitIntentPopup: boolean;
   recentlyPurchasedPopup: boolean;
   liveChat: boolean;
   infiniteScroll: boolean;
@@ -66,6 +65,11 @@ export interface FeatureFlags {
 
 export interface TrustConfig {
   ratingValue: number;
+  /**
+   * How many reviews the store has. Set this to 0 on a brand-new store: every
+   * "Rated 4.8/5 by 12k+ customers" line disappears instead of advertising
+   * numbers you haven't earned. See `hasSocialProof` in src/lib/social-proof.ts.
+   */
   ratingCount: number;
   guaranteeDays: number;
 }
@@ -233,6 +237,101 @@ export const HOME_SECTION_CATALOG: {
   { key: 'faq', label: 'FAQ', description: 'Common questions accordion', modes: ['single', 'catalog'] },
   { key: 'recentlyViewed', label: 'Recently viewed', description: 'The visitor’s browsing trail', modes: ['catalog'] },
   { key: 'newsletter', label: 'Newsletter band', description: 'Email sign-up with welcome offer', modes: ['single', 'catalog'] },
+];
+
+/* ---- Starting points ------------------------------------------------------
+   A preset is just a patch of settings applied on top of whatever the store
+   already has — it never replaces the whole config, so brand, contact details,
+   colours and copy survive switching between them.
+
+   The point of "starter" is honesty at launch: a store on day one has no
+   reviews, no testimonials and no 12,000 happy customers, so the sections that
+   would have to invent them stay off until there's something real to show.
+   Turn them back on individually (or apply "showcase") whenever you like. */
+
+export type PresetKey = 'starter' | 'showcase';
+
+export const PRESET_CATALOG: {
+  key: PresetKey;
+  label: string;
+  description: string;
+  /** What applying this preset changes. Everything else is left alone. */
+  settings: Partial<StoreSettings>;
+}[] = [
+  {
+    key: 'starter',
+    label: 'Fresh launch',
+    description:
+      'The honest day-one store: no reviews, no testimonials, no invented customer counts, no popups. Just your product, why it’s good, and a way to buy it.',
+    settings: {
+      homeSections: {
+        marquee: true,
+        featuredCollections: true,
+        featuredProducts: true,
+        valueProps: true,
+        promoBanner: false,
+        categoryGrid: true,
+        editorial: true,
+        story: false,
+        testimonials: false,
+        blogPreview: false,
+        instagram: false,
+        faq: true,
+        recentlyViewed: false,
+        newsletter: true,
+      },
+      features: {
+        wishlist: false,
+        compare: false,
+        quickAdd: true,
+        reviews: false,
+        giftWrap: false,
+        freeShippingBar: true,
+        newsletterPopup: false,
+        recentlyPurchasedPopup: false,
+        liveChat: false,
+        infiniteScroll: true,
+      },
+      trust: { ratingCount: 0 },
+    },
+  },
+  {
+    key: 'showcase',
+    label: 'Full showcase',
+    description:
+      'Every section and feature switched on — the complete demo. Best for exploring what the template can do, or for an established store with real reviews and content to fill it.',
+    settings: {
+      homeSections: {
+        marquee: true,
+        featuredCollections: true,
+        featuredProducts: true,
+        valueProps: true,
+        promoBanner: true,
+        categoryGrid: true,
+        editorial: true,
+        story: true,
+        testimonials: true,
+        blogPreview: true,
+        instagram: true,
+        faq: true,
+        recentlyViewed: true,
+        newsletter: true,
+      },
+      features: {
+        wishlist: true,
+        compare: true,
+        quickAdd: true,
+        reviews: true,
+        giftWrap: true,
+        freeShippingBar: true,
+        newsletterPopup: true,
+        recentlyPurchasedPopup: true,
+        liveChat: true,
+        infiniteScroll: true,
+      },
+      trust: { ratingCount: 12480 },
+    },
+  },
 ];
 
 export const CURRENCY_CATALOG: CurrencyConfig[] = [

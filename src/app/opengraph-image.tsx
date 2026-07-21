@@ -1,5 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { siteConfig } from '@/config/site';
+import { hasSocialProof } from '@/lib/social-proof';
+import { compactNumber } from '@/lib/utils';
 
 export const runtime = 'edge';
 export const alt = `${siteConfig.name} — ${siteConfig.tagline}`;
@@ -37,12 +39,17 @@ export default function OpengraphImage() {
           </div>
         </div>
 
+        {/* The ratings claim only appears once the store has reviews behind it. */}
         <div style={{ display: 'flex', gap: 16, fontSize: 24, color: '#4a4641', fontFamily: 'Arial, sans-serif' }}>
           <span>Free shipping over $75</span>
           <span>·</span>
           <span>30-day returns</span>
-          <span>·</span>
-          <span>4.8★ from 12,000+ reviews</span>
+          {hasSocialProof && <span>·</span>}
+          {hasSocialProof && (
+            <span>
+              {siteConfig.trust.ratingValue}★ from {compactNumber(siteConfig.trust.ratingCount)}+ reviews
+            </span>
+          )}
         </div>
       </div>
     ),

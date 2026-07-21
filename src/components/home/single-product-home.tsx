@@ -16,6 +16,7 @@
    ========================================================================== */
 
 import { getFeaturedProduct } from '@/lib/store-mode';
+import { hasSocialProof } from '@/lib/social-proof';
 import { siteConfig } from '@/config/site';
 import { compactNumber } from '@/lib/utils';
 
@@ -50,12 +51,15 @@ export function SingleProductHome() {
           <p className="mt-3 font-serif text-[clamp(2rem,4vw,3.25rem)] font-normal leading-[1.05] text-balance">
             {product.tagline ?? product.title}
           </p>
-          <div className="mt-4 flex items-center justify-center gap-2.5 text-sm text-ink-soft">
-            <StarRating rating={product.rating.rating} size={15} />
-            <span>
-              {product.rating.rating} · Loved by {compactNumber(product.rating.count)}+ customers
-            </span>
-          </div>
+          {/* Only claim a rating once the store has reviews to back it up. */}
+          {hasSocialProof && (
+            <div className="mt-4 flex items-center justify-center gap-2.5 text-sm text-ink-soft">
+              <StarRating rating={product.rating.rating} size={15} />
+              <span>
+                {product.rating.rating} · Loved by {compactNumber(product.rating.count)}+ customers
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-14">
@@ -84,9 +88,11 @@ export function SingleProductHome() {
       {show.testimonials && <Testimonials />}
 
       {/* Reviews (component already renders id="reviews") */}
-      <div className="container-page mt-20 border-t border-line pt-14 lg:mt-28">
-        <ProductReviews product={product} />
-      </div>
+      {siteConfig.features.reviews && (
+        <div className="container-page mt-20 border-t border-line pt-14 lg:mt-28">
+          <ProductReviews product={product} />
+        </div>
+      )}
 
       {/* FAQ */}
       {show.faq && (

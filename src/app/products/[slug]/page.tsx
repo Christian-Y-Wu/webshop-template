@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { siteConfig } from '@/config/site';
 import { products, getProduct, getRelatedProducts, getBoughtTogether } from '@/lib/data/products';
 import { collectionMap } from '@/lib/data/collections';
 import { buildMetadata, productJsonLd, breadcrumbJsonLd } from '@/lib/seo';
@@ -66,9 +67,11 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
         </div>
 
         {/* Reviews */}
-        <div className="mt-16 border-t border-line pt-14 lg:mt-24">
-          <ProductReviews product={product} />
-        </div>
+        {siteConfig.features.reviews && (
+          <div className="mt-16 border-t border-line pt-14 lg:mt-24">
+            <ProductReviews product={product} />
+          </div>
+        )}
       </div>
 
       {/* Related */}

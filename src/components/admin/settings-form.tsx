@@ -8,6 +8,7 @@ import {
   HOME_SECTION_CATALOG,
   LANGUAGE_CATALOG,
   PAYMENT_METHODS,
+  PRESET_CATALOG,
   THEME_CATALOG,
   type ColorModeDefault,
   type FontPreset,
@@ -49,7 +50,6 @@ const FEATURE_LABELS: Record<string, { label: string; description: string }> = {
   giftWrap: { label: 'Gift wrapping', description: 'Paid gift-wrap option in the cart' },
   freeShippingBar: { label: 'Free-shipping bar', description: 'Progress bar toward free shipping' },
   newsletterPopup: { label: 'Newsletter popup', description: 'Email capture with welcome discount' },
-  exitIntentPopup: { label: 'Exit-intent popup', description: 'Last-chance offer when leaving' },
   recentlyPurchasedPopup: { label: 'Social proof toasts', description: '“Someone just bought …” notices' },
   liveChat: { label: 'Live chat launcher', description: 'Floating chat button' },
   infiniteScroll: { label: 'Infinite scroll', description: 'Auto-load more products in collections' },
@@ -151,6 +151,27 @@ export function SettingsForm({
 
   const toggleIn = (list: string[], value: string) =>
     list.includes(value) ? list.filter((x) => x !== value) : [...list, value];
+
+  /**
+   * Apply a starting-point preset over the current draft. Presets are patches:
+   * they only touch the keys they name (sections, features, review count), so
+   * brand, colours, copy and commerce settings survive switching between them.
+   * Nothing is written until the user hits Save.
+   */
+  const applyPreset = (key: (typeof PRESET_CATALOG)[number]['key']) => {
+    const preset = PRESET_CATALOG.find((p) => p.key === key);
+    if (!preset) return;
+    setS((prev) => ({
+      ...prev,
+      homeSections: { ...prev.homeSections, ...preset.settings.homeSections },
+      features: { ...prev.features, ...preset.settings.features },
+      trust: { ...prev.trust, ...preset.settings.trust },
+    }));
+    toast({
+      title: `“${preset.label}” applied`,
+      description: 'Adjust anything below, then Save to publish it.',
+    });
+  };
 
   return (
     <div className="space-y-6 pb-28">
@@ -361,6 +382,26 @@ export function SettingsForm({
 
       {/* Homepage composer */}
       <Section id="homepage" title="Homepage" description="Compose the homepage: switch sections on or off and edit the hero copy. The page recomposes without gaps — no code, no layout surgery.">
+        <Field
+          label="Start from a preset"
+          hint="A shortcut, not a lock-in: this only flips the section and feature switches below, then you fine-tune. Your brand, colours, copy and products are untouched."
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
+            {PRESET_CATALOG.map((preset) => (
+              <button
+                key={preset.key}
+                type="button"
+                onClick={() => applyPreset(preset.key)}
+                className="rounded-card border border-line bg-surface p-4 text-left transition-colors hover:border-ink/40"
+              >
+                <span className="block text-sm font-semibold text-ink">{preset.label}</span>
+                <span className="mt-1 block text-xs leading-relaxed text-ink-muted">
+                  {preset.description}
+                </span>
+              </button>
+            ))}
+          </div>
+        </Field>
         <Field label="Sections" hint={`Sections marked “catalogue” only appear in catalogue mode; the rest apply to both modes. Current mode: ${s.storeMode === 'single' ? 'single product' : 'catalogue'}.`}>
           <div className="grid gap-2 sm:grid-cols-2">
             {HOME_SECTION_CATALOG.map((section) => (

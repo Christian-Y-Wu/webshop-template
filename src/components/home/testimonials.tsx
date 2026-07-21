@@ -4,9 +4,13 @@ import { StarRating } from '@/components/ui/star-rating';
 import { SectionHeader } from '@/components/ui/section-header';
 import { Reveal } from '@/components/ui/reveal';
 import { siteConfig } from '@/config/site';
+import { hasSocialProof } from '@/lib/social-proof';
 import { compactNumber } from '@/lib/utils';
 
 export function Testimonials() {
+  // Nothing to show yet — render nothing rather than an empty band.
+  if (testimonials.length === 0) return null;
+
   return (
     <section className="mt-20 border-y border-line bg-surface py-20 lg:mt-28 lg:py-28">
       <div className="container-page">
@@ -14,7 +18,12 @@ export function Testimonials() {
           align="center"
           eyebrow="Loved by thousands"
           title="Don’t just take our word for it"
-          description={`Rated ${siteConfig.trust.ratingValue}/5 across ${compactNumber(siteConfig.trust.ratingCount)}+ verified reviews.`}
+          // Drop the "rated X/5 across N reviews" line until the store has them.
+          description={
+            hasSocialProof
+              ? `Rated ${siteConfig.trust.ratingValue}/5 across ${compactNumber(siteConfig.trust.ratingCount)}+ verified reviews.`
+              : undefined
+          }
         />
 
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">

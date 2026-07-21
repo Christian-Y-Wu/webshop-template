@@ -166,7 +166,7 @@ const defaults: SiteConfig = {
   // mode you may want to point these at collections (e.g. /collections/sale).
   announcements: [
     { text: 'Complimentary shipping on orders over $75 — worldwide', href: '/pages/shipping' },
-    { text: 'Loved by 12,000+ customers · Rated 4.8 out of 5', href: '/#reviews' },
+    { text: 'Secure checkout · Carbon-neutral delivery', href: '/pages/shipping' },
     { text: '30-day easy returns · Free & carbon-neutral', href: '/pages/returns' },
   ],
   /** ISO date the promotional countdown counts down to. */
@@ -241,7 +241,6 @@ const defaults: SiteConfig = {
     giftWrap: true,
     freeShippingBar: true,
     newsletterPopup: true,
-    exitIntentPopup: true,
     recentlyPurchasedPopup: true,
     liveChat: true,
     infiniteScroll: true,

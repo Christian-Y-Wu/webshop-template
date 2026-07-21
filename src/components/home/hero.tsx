@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowRight, Star } from 'lucide-react';
 import { MediaImage } from '@/components/ui/media-image';
 import { siteConfig } from '@/config/site';
+import { hasSocialProof } from '@/lib/social-proof';
 import { compactNumber } from '@/lib/utils';
 
 const quickLinks = [
@@ -70,18 +71,28 @@ export function Hero() {
             </div>
           </Link>
 
-          {/* Rating + quick links */}
+          {/* Rating + quick links. On a store with no reviews yet the rating
+              claim is dropped and the card falls back to the guarantee. */}
           <div className="flex flex-1 flex-col justify-between rounded-[26px] border border-line bg-surface p-7">
             <div>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} size={16} className="fill-highlight text-highlight" />
-                ))}
-              </div>
-              <p className="mt-3 text-sm text-ink-soft">
-                Rated <strong className="text-ink">{siteConfig.trust.ratingValue}/5</strong> by{' '}
-                {compactNumber(siteConfig.trust.ratingCount)}+ happy customers worldwide.
-              </p>
+              {hasSocialProof ? (
+                <>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} size={16} className="fill-highlight text-highlight" />
+                    ))}
+                  </div>
+                  <p className="mt-3 text-sm text-ink-soft">
+                    Rated <strong className="text-ink">{siteConfig.trust.ratingValue}/5</strong> by{' '}
+                    {compactNumber(siteConfig.trust.ratingCount)}+ happy customers worldwide.
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-ink-soft">
+                  <strong className="text-ink">{siteConfig.trust.guaranteeDays}-day returns</strong>{' '}
+                  on every order — try it at home, send it back free if it isn’t right.
+                </p>
+              )}
             </div>
             <div className="mt-6 flex flex-wrap gap-2">
               {quickLinks.map((q) => (
