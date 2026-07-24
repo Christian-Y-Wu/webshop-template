@@ -9,6 +9,7 @@ import {
   LANGUAGE_CATALOG,
   PAYMENT_METHODS,
   PRESET_CATALOG,
+  STORE_TYPE_CATALOG,
   THEME_CATALOG,
   type ColorModeDefault,
   type FontPreset,
@@ -153,28 +154,78 @@ export function SettingsForm({
     list.includes(value) ? list.filter((x) => x !== value) : [...list, value];
 
   /**
-   * Apply a starting-point preset over the current draft. Presets are patches:
-   * they only touch the keys they name (sections, features, review count), so
-   * brand, colours, copy and commerce settings survive switching between them.
+   * Overlay a settings patch on the current draft. A patch only touches the
+   * keys it names — brand, contact, commerce, currencies and products always
+   * survive — and nested groups (hero, sections, features…) are merged, not
+   * replaced. Powers both the homepage presets and the store-type starters.
    * Nothing is written until the user hits Save.
    */
+  const applyPatch = (patch: Partial<StoreSettings>) => {
+    setS((prev) => ({
+      ...prev,
+      ...(patch.tagline !== undefined ? { tagline: patch.tagline } : {}),
+      ...(patch.storeMode !== undefined ? { storeMode: patch.storeMode } : {}),
+      ...(patch.theme !== undefined ? { theme: patch.theme } : {}),
+      ...(patch.fontPreset !== undefined ? { fontPreset: patch.fontPreset } : {}),
+      ...(patch.accentColor !== undefined ? { accentColor: patch.accentColor ?? null } : {}),
+      hero: { ...prev.hero, ...patch.hero },
+      newsletter: { ...prev.newsletter, ...patch.newsletter },
+      announcements: patch.announcements ? patch.announcements.map((a) => ({ ...a })) : prev.announcements,
+      homeSections: { ...prev.homeSections, ...patch.homeSections },
+      features: { ...prev.features, ...patch.features },
+      trust: { ...prev.trust, ...patch.trust },
+    }));
+  };
+
   const applyPreset = (key: (typeof PRESET_CATALOG)[number]['key']) => {
     const preset = PRESET_CATALOG.find((p) => p.key === key);
     if (!preset) return;
-    setS((prev) => ({
-      ...prev,
-      homeSections: { ...prev.homeSections, ...preset.settings.homeSections },
-      features: { ...prev.features, ...preset.settings.features },
-      trust: { ...prev.trust, ...preset.settings.trust },
-    }));
+    applyPatch(preset.settings);
     toast({
       title: `“${preset.label}” applied`,
       description: 'Adjust anything below, then Save to publish it.',
     });
   };
 
+  /**
+   * Apply a whole store-type starter: design, mode, homepage layout, feature
+   * mix and vertical-appropriate starter copy in one click. Meant as the first
+   * step of setup — everything below stays editable, nothing saves until Save.
+   */
+  const applyStoreType = (key: (typeof STORE_TYPE_CATALOG)[number]['key']) => {
+    const type = STORE_TYPE_CATALOG.find((t) => t.key === key);
+    if (!type) return;
+    applyPatch(type.settings);
+    toast({
+      title: `${type.icon} ${type.label} starter applied`,
+      description: 'Design, layout and starter copy set — fine-tune anything below, then Save.',
+    });
+  };
+
   return (
     <div className="space-y-6 pb-28">
+      {/* Store type — the first decision: what kind of shop is this? */}
+      <Section
+        id="store-type"
+        title="Store type"
+        description="Start here. Pick the kind of store you’re building and the studio sets a matching design, homepage layout, feature mix and starter copy in one click. It’s a starting point, not a lock-in — everything below stays editable, and your brand, contact details, products and discounts are never touched."
+      >
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {STORE_TYPE_CATALOG.map((type) => (
+            <button
+              key={type.key}
+              type="button"
+              onClick={() => applyStoreType(type.key)}
+              className="flex flex-col rounded-card border border-line bg-surface p-4 text-left transition-colors hover:border-ink/40"
+            >
+              <span className="text-2xl" aria-hidden>{type.icon}</span>
+              <span className="mt-2 block text-sm font-semibold text-ink">{type.label}</span>
+              <span className="mt-1 block text-xs leading-relaxed text-ink-muted">{type.description}</span>
+            </button>
+          ))}
+        </div>
+      </Section>
+
       {/* Brand */}
       <Section id="brand" title="Brand & identity" description="Who the store is. Name and tagline appear in the header, footer, SEO titles and social shares.">
         <div className="grid gap-4 sm:grid-cols-2">

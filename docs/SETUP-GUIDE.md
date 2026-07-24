@@ -39,9 +39,17 @@ ADMIN_PASSWORD=pick-a-long-passphrase
 Open **http://localhost:3000/admin** and sign in. This is the SaaS-style
 cockpit of the template — everything an owner needs, no code:
 
+**Start at the top: pick a Store type.** The first block of Store settings is a
+one-click starter for the kind of shop you're building — Fashion, Beauty,
+Single-product/DTC, Digital downloads, Food & drink, Home, Tech, or a Services
+studio. Picking one sets a matching theme, homepage layout, feature mix and
+starter copy so you're fine-tuning a store that already fits your niche instead
+of reshaping the demo from scratch. It's a starting point, not a lock-in, and
+it never touches your brand name, products or contact details.
+
 | Page | What you do there |
 | --- | --- |
-| **Store settings** | The big form: brand, contact, store mode, design (8 theme presets, 4 font pairings, accent colour, light/dark), announcements, homepage composer (per-section toggles + hero copy), founder story & timeline, newsletter copy, feature toggles, discount codes, currencies & languages, social links, trust numbers, SEO/domain. One Save button. |
+| **Store settings** | The big form: **store type starter**, brand, contact, store mode, design (8 theme presets, 4 font pairings, accent colour, light/dark), announcements, homepage composer (per-section toggles + hero copy), founder story & timeline, newsletter copy, feature toggles, discount codes, currencies & languages, social links, trust numbers, SEO/domain. One Save button. |
 | **Products** | Add/edit/delete your products; duplicate demo entries as starting points; hide the demo catalogue when yours are ready. |
 | **Launch checklist** | Live progress toward launch — items tick themselves as you configure. |
 
@@ -98,7 +106,30 @@ The template deploys anywhere Next.js runs. On Vercel:
 
 SEO works from the first deploy: canonicals, `sitemap.xml`, `robots.txt`,
 Open Graph images and JSON-LD all resolve the public URL from the
-environment automatically.
+environment automatically — even on the temporary `*.vercel.app` URL.
+
+## Step 5.5 — Your own domain (10 min + DNS wait)
+
+You can launch on the free `*.vercel.app` URL and add a domain any time — the
+store keeps working throughout.
+
+1. **Buy a domain** from any registrar (Namecheap, Cloudflare, Google Domains…).
+2. **Attach it to the deployment.** In Vercel → your project → **Settings →
+   Domains**, type the domain and click **Add**. Vercel shows the exact DNS
+   records to create — typically a **CNAME** on `www` pointing at
+   `cname.vercel-dns.com`, and an **A record** (or ALIAS/ANAME) on the apex
+   `@`. Add those at your registrar's DNS panel.
+3. **Wait for DNS** (usually minutes, up to a few hours). Vercel verifies
+   automatically and issues an HTTPS certificate for you — nothing to configure.
+4. **Make it canonical.** Set `NEXT_PUBLIC_SITE_URL=https://your-store.com` in
+   Vercel → Settings → Environment Variables, then **Redeploy**. Now every
+   canonical tag, sitemap entry, `robots.txt` line and OG image points at your
+   real domain instead of the `*.vercel.app` one.
+5. **Re-check** the share preview and (re)submit `/sitemap.xml` to Google
+   Search Console under the new domain.
+
+> On other hosts (Netlify, Cloudflare Pages, a VPS) the idea is identical: add
+> the domain in the host, point DNS at it, then set `NEXT_PUBLIC_SITE_URL`.
 
 ## Step 6 — After launch
 

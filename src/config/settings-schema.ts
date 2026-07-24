@@ -334,6 +334,284 @@ export const PRESET_CATALOG: {
   },
 ];
 
+/* ---- Store-type starters --------------------------------------------------
+   A store-type is a bigger patch than a preset: one click sets the design
+   (theme, fonts), the store mode, the whole homepage layout, the feature mix
+   AND vertical-appropriate starter copy (tagline, hero, announcements). It is
+   the "what kind of shop is this?" answer, meant to be the FIRST thing an
+   owner picks in the studio — then they fine-tune everything below and Save.
+
+   Like presets, these are patches applied over the current draft: brand name,
+   contact details, currencies, discounts and products are never touched, so a
+   store can try on different types without losing its identity. Every copy
+   line is honest placeholder — no invented review counts (trust.ratingCount
+   stays 0), no fake customer numbers. Add a new vertical by appending here;
+   nothing else in the app needs to change. */
+
+export type StoreTypeKey =
+  | 'fashion'
+  | 'beauty'
+  | 'single'
+  | 'digital'
+  | 'food'
+  | 'home'
+  | 'electronics'
+  | 'services';
+
+/** A full homepage layout, so switching store types is deterministic. */
+function sections(on: HomeSectionKey[]): HomeSections {
+  return HOME_SECTION_CATALOG.reduce((acc, s) => {
+    acc[s.key] = on.includes(s.key);
+    return acc;
+  }, {} as HomeSections);
+}
+
+/** A full feature set, so switching store types is deterministic. */
+function features(on: (keyof FeatureFlags)[]): FeatureFlags {
+  const keys: (keyof FeatureFlags)[] = [
+    'wishlist', 'compare', 'quickAdd', 'reviews', 'giftWrap',
+    'freeShippingBar', 'newsletterPopup', 'recentlyPurchasedPopup', 'liveChat', 'infiniteScroll',
+  ];
+  return keys.reduce((acc, k) => {
+    acc[k] = on.includes(k);
+    return acc;
+  }, {} as FeatureFlags);
+}
+
+export const STORE_TYPE_CATALOG: {
+  key: StoreTypeKey;
+  /** Emoji shown on the picker card — keeps the catalog icon-library-free. */
+  icon: string;
+  label: string;
+  description: string;
+  settings: Partial<StoreSettings>;
+}[] = [
+  {
+    key: 'fashion',
+    icon: '👗',
+    label: 'Fashion & apparel',
+    description: 'A browsable catalogue with collections, lookbook editorial and reviews. Editorial serif, warm ivory canvas.',
+    settings: {
+      tagline: 'Wardrobe essentials, considered and made to last.',
+      storeMode: 'catalog',
+      theme: '',
+      fontPreset: 'editorial',
+      hero: {
+        eyebrow: 'The new season edit',
+        heading: 'Pieces you’ll reach for every day',
+        subheading: 'Thoughtfully cut, responsibly made, and built to outlast the trend cycle.',
+        primaryCtaLabel: 'Shop new in',
+        primaryCtaHref: '/collections/new-arrivals',
+        secondaryCtaLabel: 'Best sellers',
+        secondaryCtaHref: '/collections/best-sellers',
+      },
+      announcements: [
+        { text: 'Free shipping over $75 — worldwide', href: '/pages/shipping' },
+        { text: '30-day easy returns', href: '/pages/returns' },
+      ],
+      homeSections: sections(['marquee', 'featuredCollections', 'featuredProducts', 'valueProps', 'categoryGrid', 'editorial', 'testimonials', 'instagram', 'faq', 'newsletter']),
+      features: features(['wishlist', 'quickAdd', 'reviews', 'giftWrap', 'freeShippingBar', 'infiniteScroll']),
+      trust: { ratingCount: 0 },
+    },
+  },
+  {
+    key: 'beauty',
+    icon: '🧴',
+    label: 'Beauty & skincare',
+    description: 'Ingredient-led product pages, ritual storytelling and heavy social proof. Soft blush palette, classic type.',
+    settings: {
+      tagline: 'Clean, effective skincare for every day.',
+      storeMode: 'catalog',
+      theme: 'blush',
+      fontPreset: 'classic',
+      hero: {
+        eyebrow: 'Skin-first formulas',
+        heading: 'Results you can feel, ingredients you can trust',
+        subheading: 'Dermatologist-tested essentials, free from the nasties — kind to skin, kinder to the planet.',
+        primaryCtaLabel: 'Shop bestsellers',
+        primaryCtaHref: '/collections/best-sellers',
+        secondaryCtaLabel: 'The ritual',
+        secondaryCtaHref: '/collections/all',
+      },
+      announcements: [
+        { text: 'Free samples with every order' },
+        { text: 'Cruelty-free & dermatologist-tested' },
+      ],
+      homeSections: sections(['marquee', 'featuredProducts', 'valueProps', 'categoryGrid', 'editorial', 'testimonials', 'faq', 'newsletter']),
+      features: features(['wishlist', 'quickAdd', 'reviews', 'giftWrap', 'freeShippingBar']),
+      trust: { ratingCount: 0 },
+    },
+  },
+  {
+    key: 'single',
+    icon: '⭐',
+    label: 'Single product / DTC',
+    description: 'One hero product, one conversion-first landing page. Navigation collapses; the whole site sells the one thing.',
+    settings: {
+      tagline: 'One product, obsessively made.',
+      storeMode: 'single',
+      theme: '',
+      fontPreset: 'modern',
+      hero: {
+        eyebrow: 'Meet the one',
+        heading: 'The only one you’ll need',
+        subheading: 'We put everything into a single product and got it right. No endless catalogue — just this.',
+        primaryCtaLabel: 'Add to cart',
+        primaryCtaHref: '#buy',
+        secondaryCtaLabel: 'How it’s made',
+        secondaryCtaHref: '#story',
+      },
+      announcements: [
+        { text: 'Free shipping, always' },
+        { text: '30-day money-back guarantee', href: '/pages/returns' },
+      ],
+      homeSections: sections(['marquee', 'valueProps', 'editorial', 'story', 'faq', 'newsletter']),
+      features: features(['quickAdd', 'freeShippingBar']),
+      trust: { ratingCount: 0 },
+    },
+  },
+  {
+    key: 'digital',
+    icon: '💾',
+    label: 'Digital & downloads',
+    description: 'Instant-delivery goods: templates, presets, courses, e-books. No shipping mechanics. Cool cobalt, minimal type.',
+    settings: {
+      tagline: 'Premium digital goods, delivered instantly.',
+      storeMode: 'catalog',
+      theme: 'cobalt',
+      fontPreset: 'minimal',
+      hero: {
+        eyebrow: 'Instant download',
+        heading: 'Tools and templates that save you hours',
+        subheading: 'Buy once, download instantly, use forever. No subscriptions, no shipping, no waiting.',
+        primaryCtaLabel: 'Browse the library',
+        primaryCtaHref: '/collections/all',
+        secondaryCtaLabel: '',
+        secondaryCtaHref: '',
+      },
+      announcements: [
+        { text: 'Instant delivery — download link on checkout' },
+        { text: 'Lifetime access & free updates' },
+      ],
+      homeSections: sections(['marquee', 'featuredProducts', 'valueProps', 'categoryGrid', 'editorial', 'testimonials', 'faq', 'newsletter']),
+      features: features(['wishlist', 'quickAdd', 'reviews', 'infiniteScroll']),
+      trust: { ratingCount: 0 },
+    },
+  },
+  {
+    key: 'food',
+    icon: '🍫',
+    label: 'Food & drink',
+    description: 'Small-batch pantry goods and gift sets, with provenance storytelling. Warm sand palette, editorial type.',
+    settings: {
+      tagline: 'Small-batch flavour, delivered to your door.',
+      storeMode: 'catalog',
+      theme: 'sand',
+      fontPreset: 'editorial',
+      hero: {
+        eyebrow: 'Small batch',
+        heading: 'Made in small batches, packed with flavour',
+        subheading: 'Sourced from growers we know by name and made fresh to order.',
+        primaryCtaLabel: 'Shop the pantry',
+        primaryCtaHref: '/collections/all',
+        secondaryCtaLabel: 'Gift sets',
+        secondaryCtaHref: '/collections/best-sellers',
+      },
+      announcements: [
+        { text: 'Free shipping over $50', href: '/pages/shipping' },
+        { text: 'Freshly made to order' },
+      ],
+      homeSections: sections(['marquee', 'featuredProducts', 'valueProps', 'categoryGrid', 'editorial', 'story', 'testimonials', 'faq', 'newsletter']),
+      features: features(['quickAdd', 'reviews', 'giftWrap', 'freeShippingBar']),
+      trust: { ratingCount: 0 },
+    },
+  },
+  {
+    key: 'home',
+    icon: '🛋️',
+    label: 'Home & lifestyle',
+    description: 'Homeware and decor across rooms, with collection tiles and lifestyle imagery. Sand palette, editorial type.',
+    settings: {
+      tagline: 'Objects for a considered home.',
+      storeMode: 'catalog',
+      theme: 'sand',
+      fontPreset: 'editorial',
+      hero: {
+        eyebrow: 'For every room',
+        heading: 'Considered pieces for a home you love',
+        subheading: 'Honest materials and quiet design, made to be lived with for years.',
+        primaryCtaLabel: 'Shop new in',
+        primaryCtaHref: '/collections/new-arrivals',
+        secondaryCtaLabel: 'Best sellers',
+        secondaryCtaHref: '/collections/best-sellers',
+      },
+      announcements: [
+        { text: 'Complimentary shipping over $75', href: '/pages/shipping' },
+        { text: '30-day easy returns', href: '/pages/returns' },
+      ],
+      homeSections: sections(['marquee', 'featuredCollections', 'featuredProducts', 'valueProps', 'categoryGrid', 'editorial', 'story', 'testimonials', 'instagram', 'newsletter']),
+      features: features(['wishlist', 'quickAdd', 'reviews', 'giftWrap', 'freeShippingBar', 'infiniteScroll']),
+      trust: { ratingCount: 0 },
+    },
+  },
+  {
+    key: 'electronics',
+    icon: '🎧',
+    label: 'Tech & gadgets',
+    description: 'Spec-driven product pages with side-by-side compare and warranty trust. Stark noir palette, modern type.',
+    settings: {
+      tagline: 'Gear that just works.',
+      storeMode: 'catalog',
+      theme: 'noir',
+      fontPreset: 'modern',
+      hero: {
+        eyebrow: 'Engineered better',
+        heading: 'Tech designed around you, not the spec sheet',
+        subheading: 'Thoughtful hardware, tested to last, with support that actually helps.',
+        primaryCtaLabel: 'Shop all',
+        primaryCtaHref: '/collections/all',
+        secondaryCtaLabel: 'Best sellers',
+        secondaryCtaHref: '/collections/best-sellers',
+      },
+      announcements: [
+        { text: 'Free 2-year warranty on every order' },
+        { text: 'Fast, tracked shipping', href: '/pages/shipping' },
+      ],
+      homeSections: sections(['marquee', 'featuredProducts', 'valueProps', 'categoryGrid', 'editorial', 'testimonials', 'faq', 'newsletter']),
+      features: features(['compare', 'wishlist', 'quickAdd', 'reviews', 'freeShippingBar', 'infiniteScroll']),
+      trust: { ratingCount: 0 },
+    },
+  },
+  {
+    key: 'services',
+    icon: '📅',
+    label: 'Services & studio',
+    description: 'A booking-led landing page for a studio or practice — story, value props and a get-in-touch CTA, no cart mechanics.',
+    settings: {
+      tagline: 'A studio that cares about the details.',
+      storeMode: 'single',
+      theme: 'orchid',
+      fontPreset: 'minimal',
+      hero: {
+        eyebrow: 'Now booking',
+        heading: 'Work with us',
+        subheading: 'A small studio taking on a handful of projects at a time. Tell us what you need.',
+        primaryCtaLabel: 'Get in touch',
+        primaryCtaHref: '/pages/contact',
+        secondaryCtaLabel: 'What we do',
+        secondaryCtaHref: '/pages/faq',
+      },
+      announcements: [
+        { text: 'Now booking new projects' },
+        { text: 'Replies within one business day' },
+      ],
+      homeSections: sections(['valueProps', 'editorial', 'story', 'testimonials', 'faq', 'newsletter']),
+      features: features([]),
+      trust: { ratingCount: 0 },
+    },
+  },
+];
+
 export const CURRENCY_CATALOG: CurrencyConfig[] = [
   { code: 'USD', symbol: '$', label: 'US Dollar', rate: 1, locale: 'en-US', flag: '🇺🇸' },
   { code: 'EUR', symbol: '€', label: 'Euro', rate: 0.92, locale: 'de-DE', flag: '🇪🇺' },
